@@ -1161,7 +1161,9 @@ class ServerConnection(BaseConnection):
         z = int(math.floor(z))
         for player_list in (self.team.other.get_players(), (self,)):
             for player in player_list:
-                if not player.hp:
+                # not sure when world_object is ever none, but it's
+                # the source of a crash
+                if not player.hp or player.world_object is None:
                     continue
                 damage = grenade.get_damage(player.world_object.position)
                 if damage == 0:
