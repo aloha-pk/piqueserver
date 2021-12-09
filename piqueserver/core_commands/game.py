@@ -184,7 +184,7 @@ def toggle_teamkill(connection, player=None):
         value = not player.friendly_fire
         player.friendly_fire = value
         msg = '%s can teamkill again' if value else '%s is disabled from teamkilling'
-        connection.protocol.send_chat(msg % player.name)
+        connection.protocol.broadcast_chat(msg % player.name)
         connection.protocol.irc_say('* %s %s friendly fire for %s' %
                                     (connection.name,
                                      ['disabled', 'enabled'][int(value)], player.name))
@@ -198,7 +198,7 @@ def toggle_teamkill(connection, player=None):
             value = 'on_grief'
             on_off = 'to only on grief'
         connection.protocol.friendly_fire = value
-        connection.protocol.send_chat(
+        connection.protocol.broadcast_chat(
             'Friendly fire has been toggled %s!' % on_off)
         connection.protocol.irc_say('* %s toggled friendly fire %s' % (
             connection.name, on_off))
@@ -206,7 +206,7 @@ def toggle_teamkill(connection, player=None):
 @command('griefteamkill', 'gtk', admin_only=True)
 def grief_teamkill(connection):
     connection.protocol.friendly_fire = 'on_grief'
-    connection.protocol.send_chat('Friendly fire has been toggled to only on grief!')
+    connection.protocol.broadcast_chat('Friendly fire has been toggled to only on grief!')
     connection.protocol.irc_say('* %s toggled friendly fire to only on grief' % connection.name)
 
 @command('allowteamkill', 'atk', admin_only=True)
@@ -215,12 +215,12 @@ def allow_teamkill(connection, player = None):
         player = get_player(connection.protocol, player)
         player.friendly_fire = True
         msg = '%s can teamkill again'
-        connection.protocol.send_chat(msg % player.name)
+        connection.protocol.broadcast_chat(msg % player.name)
         connection.protocol.irc_say('* %s enabled teamkilling for %s' % (connection.name,
             player.name))
     else:
         connection.protocol.friendly_fire = True
-        connection.protocol.send_chat('Friendly fire has been toggled ON!')
+        connection.protocol.broadcast_chat('Friendly fire has been toggled ON!')
         connection.protocol.irc_say('* %s toggled friendly fire ON' % connection.name)
 
 @command('disableteamkill', 'dtk', admin_only=True)
@@ -229,12 +229,12 @@ def disable_teamkill(connection, player = None):
         player = get_player(connection.protocol, player)
         player.friendly_fire = False
         msg = '%s is disabled from teamkilling'
-        connection.protocol.send_chat(msg % player.name)
+        connection.protocol.broadcast_chat(msg % player.name)
         connection.protocol.irc_say('* %s disabled teamkilling for %s' % (connection.name,
             player.name))
     else:
         connection.protocol.friendly_fire = False
-        connection.protocol.send_chat('Friendly fire has been toggled OFF!')
+        connection.protocol.broadcast_chat('Friendly fire has been toggled OFF!')
         connection.protocol.irc_say('* %s toggled friendly fire OFF' % connection.name)
 
 @command('globalchat', admin_only=True)
