@@ -939,8 +939,7 @@ class ServerConnection(BaseConnection):
             if not by.friendly_fire:
                 return
             friendly_fire = self.protocol.friendly_fire
-            friendly_fire_on_grief = self.protocol.friendly_fire_on_grief
-            if friendly_fire_on_grief:
+            if friendly_fire == 'on_grief':
                 if (kill_type == MELEE_KILL and
                         not self.protocol.spade_teamkills_on_grief):
                     return
