@@ -115,8 +115,6 @@ team2_name = team2_config.option(
 team1_color = team1_config.option('color', default=(0, 0, 196))
 team2_color = team2_config.option('color', default=(0, 196, 0))
 friendly_fire = config.option('friendly_fire', default=False)
-friendly_fire_on_grief = config.option('friendly_fire_on_grief',
-                                       default=True)
 grief_friendly_fire_time = config.option('grief_friendly_fire_time',
                                          default='2sec', cast=cast_duration)
 spade_teamkills_on_grief = config.option('spade_teamkills_on_grief',
@@ -310,7 +308,6 @@ class FeatureProtocol(ServerProtocol):
         self.team1_color = tuple(team1_color.get())
         self.team2_color = tuple(team2_color.get())
         self.friendly_fire = friendly_fire.get()
-        self.friendly_fire_on_grief = friendly_fire_on_grief.get()
         self.friendly_fire_time = grief_friendly_fire_time.get()
         self.spade_teamkills_on_grief = spade_teamkills_on_grief.get()
         self.fall_damage = fall_damage.get()

@@ -119,11 +119,9 @@ respawn_time = "16sec"
 respawn_waves = true
 
 # whether friendly fire is allowed by default
+# set to "on_grief" for friendly fire if a player destroys blocks
+# (helpful if you want to kill griefers)
 friendly_fire = false
-
-# allow friendly fire if player destroys blocks (helpful if you want to kill
-# griefers
-friendly_fire_on_grief = true
 
 # duration a player is vulnerable to friendly fire if
 # friendly_fire_on_grief enabled

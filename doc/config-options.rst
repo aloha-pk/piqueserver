@@ -183,13 +183,8 @@ friendly_fire
 +++++++++++++
 
 ``true``: enables friendly fire.
+``"on_grief"``: friendly fire is temporarily enabled if a player destroys a block.
 ``false``: disables friendly fire.
-
-.. _friendly_fire_on_grief:
-
-friendly_fire_on_grief
-++++++++++++++++++++++
-if true, friendly fire is enabled temporarily if a player destroys a block.
 
 spade_teamkills_on_grief
 ++++++++++++++++++++++++
@@ -200,7 +195,7 @@ grief_friendly_fire_time
 ++++++++++++++++++++++++
 
 The number of seconds a player is vulnerable to friendly fire after destroying
-a block when :ref:`friendly_fire_on_grief` is enabled.
+a block when :ref:`friendly_fire` is set to ``"on_grief"``.
 
 teamswitch_interval
 +++++++++++++++++++
