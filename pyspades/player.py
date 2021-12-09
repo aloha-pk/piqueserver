@@ -77,6 +77,7 @@ class ServerConnection(BaseConnection):
     saved_loaders = None
     last_refill = None
     last_block_destroy = None
+    friendly_fire = True
     filter_visibility_data = False
     filter_animation_data = False
     freeze_animation = False
@@ -974,6 +975,8 @@ class ServerConnection(BaseConnection):
         if self.hp is None:
             return
         if by is not None and self.team is by.team:
+            if not by.friendly_fire:
+                return
             friendly_fire = self.protocol.friendly_fire
             friendly_fire_on_grief = self.protocol.friendly_fire_on_grief
             if friendly_fire_on_grief and not friendly_fire:
