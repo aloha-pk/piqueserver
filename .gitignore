@@ -69,3 +69,8 @@ htmlcov
 *~
 *.swp
 *.swo
+
+# aloha-specific
+aloha
+venv-master
+venv-testing
