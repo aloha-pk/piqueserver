@@ -32,6 +32,7 @@ class PublishResource(Resource):
         return self
 
     def render_GET(self, request):
+        request.defaultContentType = "application/json"
         return self.factory.json_bans
 
 
