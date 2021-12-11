@@ -68,8 +68,6 @@ def unlock(connection, value):
     connection.protocol.broadcast_chat('%s team is now unlocked' % team.name)
     connection.protocol.irc_say('* %s unlocked %s team' % (connection.name,
                                                            team.name))
-
-
 @command(admin_only=True)
 @target_player
 def switch(connection, player, team=None):
