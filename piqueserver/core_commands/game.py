@@ -88,6 +88,7 @@ def switch(connection, player, team = None):
         if new_team == old_team:
             return "Player is already on that team"
     if player.invisible:
+        player.drop_intel() # this shouldn't ever be possible, but just in case
         player.team = new_team
         player.on_team_changed(old_team)
         player.spawn(player.world_object.position.get())
