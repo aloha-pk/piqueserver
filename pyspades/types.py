@@ -58,6 +58,24 @@ class IDPool:
     def put_back(self, id):
         self.free_ids.append(id)
 
+class ProtocolIDPool(IDPool):
+    def __init__(self, protocol, start=0):
+        super().__init__(start)
+        self.protocol = protocol
+        
+    def pop(self):
+        id = super().pop()
+
+        # HACKHACK: fix aloha-pk/piqueserver#8
+        if id > 31:
+            taken_ids = []
+            for i in self.protocol.connections:
+                taken_ids.append(self.protocol.connections[i].player_id)
+            self.free_ids = list(set(range(0, 32)) - set(taken_ids))
+            id = super(self).pop()
+
+        return id
+            
 
 class AttributeSet(set):
     """
