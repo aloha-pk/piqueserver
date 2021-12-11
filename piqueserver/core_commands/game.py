@@ -72,19 +72,22 @@ def unlock(connection, value):
 
 @command(admin_only=True)
 @target_player
-def switch(connection, player):
+def switch(connection, player, team = None):
     """
-    Switch teams either for yourself or for a given player
-    /switch [player]
+    Switch teams either for yourself or for a given player. Optionally, switch them to a specific team
+    /switch [player] [team]
     """
     protocol = connection.protocol
-    if player.team.spectator:
-        player.send_chat(
-            "The switch command can't be used on a spectating player.")
-        return
-    new_team = player.team.other
+    old_team = player.team
+    if player.team.spectator and team is None:
+        return "Please provide a team to switch the player to"
+    if team is None:
+        new_team = player.team.other
+    else:
+        new_team = get_team(connection, team)
+        if new_team == old_team:
+            return "Player is already on that team"
     if player.invisible:
-        old_team = player.team
         player.team = new_team
         player.on_team_changed(old_team)
         player.spawn(player.world_object.position.get())
