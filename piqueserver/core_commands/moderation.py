@@ -249,6 +249,7 @@ def invisible(connection, player):
     if player.invisible:
         player.send_chat("You're now invisible")
         protocol.irc_say('* %s became invisible' % player.name)
+        player.drop_flag()
         kill_action = KillAction()
         kill_action.kill_type = choice([GRENADE_KILL, FALL_KILL])
         kill_action.player_id = kill_action.killer_id = player.player_id

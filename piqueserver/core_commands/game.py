@@ -86,7 +86,7 @@ def switch(connection, player, team=None):
         new_team = get_team(connection, team)
 
     if player.invisible:
-        old_team = player.team
+        player.drop_intel() # this shouldn't ever be possible, but just in case
         player.team = new_team
         player.on_team_changed(old_team)
         player.spawn(player.world_object.position.get())
