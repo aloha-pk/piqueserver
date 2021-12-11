@@ -495,6 +495,15 @@ class ServerConnection(BaseConnection):
                 log.info('RAPID HACK: {events}', events=self.rapids.get_events())
                 self.on_hack_attempt('Rapid hack detected')
             return
+        # aloha-pk/piqueserver#15
+        if (contained.value == GRENADE_DESTROY or
+           (not vector_collision(self.world_object.position, contained, MAX_DIG_DISTANCE + (self.rubberband_distance / 2.0))
+            and (self.tool == GRENADE_TOOL or
+                (self.tool == BLOCK_TOOL and contained.value != BUILD_BLOCK) or
+                (self.tool != BLOCK_TOOL and contained.value == BUILD_BLOCK) or
+                (self.tool != SPADE_TOOL and contained.value == SPADE_DESTROY)))):
+            self.on_blockaction_exploit(contained)
+            return
         map = self.protocol.map
         x = contained.x
         y = contained.y
@@ -1323,6 +1332,9 @@ class ServerConnection(BaseConnection):
         pass
 
     def on_block_destroy(self, x, y, z, mode):
+        pass
+
+    def on_blockaction_exploit(self, packet): # extremely niche lol
         pass
 
     def on_block_removed(self, x, y, z):
