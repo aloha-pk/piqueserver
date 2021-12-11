@@ -148,6 +148,7 @@ class BaseProtocol:
                 event_type = event.type
                 if event_type == enet.EVENT_TYPE_NONE:
                     break
+                self.on_enet_event(event)
                 peer = event.peer
                 is_client = peer in self.clients
                 if is_client:
@@ -172,3 +173,8 @@ class BaseProtocol:
             # make sure the LoopingCall doesn't catch this and stops
             import traceback
             traceback.print_exc()
+
+    def on_enet_event(self, event):
+        """
+        This method is DANGEROUS! Don't do anything stupid here.
+        """
