@@ -3,7 +3,7 @@ from piqueserver.commands import (command, CommandError, get_player,
                                   PermissionDenied, player_only, target_player)
 
 
-@command(admin_only=True)
+@command('unstick', 'unstuck', admin_only=True)
 @target_player
 def unstick(connection, player):
     """
