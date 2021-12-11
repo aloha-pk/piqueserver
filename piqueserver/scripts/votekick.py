@@ -282,16 +282,20 @@ class Votekick:
 
     def send_chat_update(self, target=None):
         # send only to target player if provided, otherwise broadcast to server
-        target = target or self.protocol
-        target.send_chat(
-            S_UPDATE.format(
+        update = S_UPDATE.format(
                 instigator=self.instigator.name,
                 instigator_id=self.instigator.player_id,
                 victim=self.victim.name,
                 victim_id=self.victim.player_id,
-                needed=self.votes_remaining))
-        target.send_chat(S_REASON.format(reason=self.reason))
+                needed=self.votes_remaining)
 
+        reason = S_REASON.format(reason=self.reason)
+        if target:
+            target.send_chat(update)
+            target.send_chat(reason)
+        else:
+            self.protocol.broadcast_chat(update)
+            self.protocol.broadcast_chat(reason)
 
 def apply_script(protocol, connection, config):
 

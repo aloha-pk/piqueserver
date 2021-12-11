@@ -421,7 +421,7 @@ def apply_script(protocol, connection, config):
                     team.arena_message += 's'
                 team.arena_message += ' on ' + team.name
             self.broadcast_chat('%s and %s remain.' %
-                                (green_team.arena_message, blue_team.arena_message))
+                           (green_team.arena_message, blue_team.arena_message))
 
         def on_map_change(self, map_):
             extensions = self.map_info.extensions
