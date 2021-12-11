@@ -156,6 +156,46 @@ def toggle_build(connection, player=None):
                                           on_off))
 
 
+@command('allowbuild', 'ab', admin_only=True)
+def toggle_build(connection, player=None):
+    """
+    Allow building for everyone in the server or for a given player
+    /allowbuild [player]
+    """
+    if player is not None:
+        player = get_player(connection.protocol, player)
+        player.building = True
+        msg = '%s can build again'
+        connection.protocol.broadcast_chat(msg % player.name)
+        connection.protocol.irc_say('* %s enabled building for %s' %
+                                    (connection.name, player.name))
+    else:
+        connection.protocol.building = True
+        connection.protocol.broadcast_chat('Building has been toggled ON!')
+        connection.protocol.irc_say(
+            '* %s toggled building ON' % connection.name)
+
+
+@command('disablebuild', 'db', admin_only=True)
+def toggle_build(connection, player=None):
+    """
+    Disable building for everyone in the server or for a given player
+    /disablebuild [player]
+    """
+    if player is not None:
+        player = get_player(connection.protocol, player)
+        player.building = False
+        msg = '%s is disabled from building'
+        connection.protocol.broadcast_chat(msg % player.name)
+        connection.protocol.irc_say('* %s disabled building for %s' %
+                                    (connection.name, player.name))
+    else:
+        connection.protocol.building = False
+        connection.protocol.broadcast_chat('Building has been toggled OFF!')
+        connection.protocol.irc_say(
+            '* %s toggled building OFF' % connection.name)
+
+
 @command('togglekill', 'tk', admin_only=True)
 def toggle_kill(connection, player=None):
     """
@@ -213,11 +253,13 @@ def toggle_teamkill(connection, player=None):
         connection.protocol.irc_say('* %s toggled friendly fire %s' % (
             connection.name, on_off))
 
+
 @command('griefteamkill', 'gtk', admin_only=True)
 def grief_teamkill(connection):
     connection.protocol.friendly_fire = 'on_grief'
     connection.protocol.broadcast_chat('Friendly fire has been toggled to only on grief!')
     connection.protocol.irc_say('* %s toggled friendly fire to only on grief' % connection.name)
+
 
 @command('allowteamkill', 'atk', admin_only=True)
 def allow_teamkill(connection, player = None):
@@ -233,6 +275,7 @@ def allow_teamkill(connection, player = None):
         connection.protocol.broadcast_chat('Friendly fire has been toggled ON!')
         connection.protocol.irc_say('* %s toggled friendly fire ON' % connection.name)
 
+
 @command('disableteamkill', 'dtk', admin_only=True)
 def disable_teamkill(connection, player = None):
     if player is not None:
@@ -246,6 +289,7 @@ def disable_teamkill(connection, player = None):
         connection.protocol.friendly_fire = False
         connection.protocol.broadcast_chat('Friendly fire has been toggled OFF!')
         connection.protocol.irc_say('* %s toggled friendly fire OFF' % connection.name)
+
 
 @command('globalchat', admin_only=True)
 def global_chat(connection, value=None):
