@@ -809,10 +809,13 @@ class FeatureProtocol(ServerProtocol):
             else:
                 self.irc_relay.send(msg, do_filter=True)
 
-    def send_tip(self):
-        line = self.tips[random.randrange(len(self.tips))]
+    def send_tip(self, index = 0):
+        if index > len(self.tips) - 1:
+            index = 0
+        line = self.tips[index]
         self.broadcast_chat(line)
-        reactor.callLater(self.tip_frequency * 60, self.send_tip)
+        index += 1
+        reactor.callLater(self.tip_frequency * 60, self.send_tip, index)
 
     # pylint: disable=arguments-differ
     def broadcast_chat(self, value, global_message=True, sender=None,
