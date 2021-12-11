@@ -183,8 +183,10 @@ def mute(connection, value):
     if player.mute:
         return '%s is already muted' % player.name
     player.mute = True
-    message = '%s has been muted by %s' % (player.name, connection.name)
-    connection.protocol.broadcast_chat(message, irc=True)
+    message = '%s has been muted' % player.name
+    connection.protocol.broadcast_chat(message)
+    message = '* %s has been muted by %s' % (player.name, connection.name)
+    connection.protocol.irc_say(message)
 
 
 @command(admin_only=True)
@@ -197,8 +199,10 @@ def unmute(connection, value):
     if not player.mute:
         return '%s is not muted' % player.name
     player.mute = False
-    message = '%s has been unmuted by %s' % (player.name, connection.name)
-    connection.protocol.broadcast_chat(message, irc=True)
+    message = '%s has been unmuted' % player.name
+    connection.protocol.broadcast_chat(message)
+    message = '* %s has been unmuted by %s' % (player.name, connection.name)
+    connection.protocol.irc_say(message)
 
 
 @command(admin_only=True)
