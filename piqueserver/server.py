@@ -183,8 +183,17 @@ def ensure_dir_exists(filename: str) -> None:
 
 
 def random_choice_cycle(choices):
+    n = len(choices)
     while True:
-        yield random.choice(choices)
+        n -= 1
+        if n == 0:
+            choice = choices[0]
+            random.shuffle(choices)
+            n = len(choices) - 1
+            while choice == choices[n]:
+                random.shuffle(choices)
+            yield choice
+        yield choices[n]
 
 
 class FeatureTeam(Team):
