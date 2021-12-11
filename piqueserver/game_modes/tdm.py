@@ -82,12 +82,12 @@ def apply_script(protocol, connection, config):
 
         def check_end_game(self, player):
             if self.green_team.kills >= self.kill_limit:
-                self.send_chat("Green Team Wins, %s - %s" %
+                self.broadcast_chat("Green Team Wins, %s - %s" %
                                (self.green_team.kills, self.blue_team.kills))
                 self.reset_game(player)
                 protocol.on_game_end(self)
             elif self.blue_team.kills >= self.kill_limit:
-                self.send_chat("Blue Team Wins, %s - %s" %
+                self.broadcast_chat("Blue Team Wins, %s - %s" %
                                (self.blue_team.kills, self.green_team.kills))
                 self.reset_game(player)
                 protocol.on_game_end(self)

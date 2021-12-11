@@ -99,7 +99,7 @@ def do_move(connection, args, silent=False):
     if silent:
         connection.protocol.irc_say('* ' + message)
     else:
-        connection.protocol.send_chat(message, irc=True)
+        connection.protocol.broadcast_chat(message, irc=True)
 
 
 @command(admin_only=True)
@@ -145,7 +145,7 @@ def teleport(connection, player1, player2=None, silent=False):
     if silent:
         connection.protocol.irc_say('* ' + message)
     else:
-        connection.protocol.send_chat(message, irc=True)
+        connection.protocol.broadcast_chat(message, irc=True)
 
 
 @command('tpsilent', 'tps', admin_only=True)

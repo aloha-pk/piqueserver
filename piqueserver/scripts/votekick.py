@@ -217,12 +217,12 @@ class Votekick:
                 instigator=instigator.name,
                 victim=victim.name,
                 reason=self.reason))
-        protocol.send_chat(
+        protocol.broadcast_chat(
             S_ANNOUNCE.format(
                 instigator=instigator.name,
                 victim=victim.name),
             sender=instigator)
-        protocol.send_chat(S_REASON.format(reason=self.reason),
+        protocol.broadcast_chat(S_REASON.format(reason=self.reason),
                            sender=instigator)
         instigator.send_chat(S_ANNOUNCE_SELF.format(victim=victim.name))
 
@@ -237,7 +237,7 @@ class Votekick:
         elif player in self.votes:
             return
         if self.public_votes:
-            self.protocol.send_chat(S_YES.format(player=player.name))
+            self.protocol.broadcast_chat(S_YES.format(player=player.name))
         self.votes[player] = True
         if self.votes_remaining <= 0:
             # vote passed, ban or kick accordingly
@@ -261,7 +261,7 @@ class Votekick:
     def end(self, result):
         self.ended = True
         message = S_ENDED.format(victim=self.victim.name, result=result)
-        self.protocol.send_chat(message, irc=True)
+        self.protocol.broadcast_chat(message, irc=True)
         if not self.instigator.admin:
             self.instigator.last_votekick = seconds()
         self.protocol.on_votekick_end()
@@ -269,14 +269,17 @@ class Votekick:
 
     def send_chat_update(self, target=None):
         # send only to target player if provided, otherwise broadcast to server
-        target = target or self.protocol
-        target.send_chat(
-            S_UPDATE.format(
+        update = S_UPDATE.format(
                 instigator=self.instigator.name,
                 victim=self.victim.name,
-                needed=self.votes_remaining))
-        target.send_chat(S_REASON.format(reason=self.reason))
-
+                needed=self.votes_remaining)
+        reason = S_REASON.format(reason=self.reason)
+        if target:
+            target.send_chat(update)
+            target.send_chat(reason)
+        else:
+            self.protocol.broadcast_chat(update)
+            self.protocol.broadcast_chat(reason)
 
 def apply_script(protocol, connection, config):
 
