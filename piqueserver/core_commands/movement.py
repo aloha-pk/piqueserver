@@ -10,9 +10,10 @@ def unstick(connection, player):
     Unstick yourself or another player and inform everyone on the server of it
     /unstick [player]
     """
-    connection.protocol.broadcast_chat("%s unstuck %s" %
-                                  (connection.name, player.name), irc=True)
+    connection.protocol.irc_say("%s unstuck %s" %
+                                  (connection.name, player.name))
     player.set_location_safe(player.get_location())
+    return "Unstuck"
 
 
 @command('moves', admin_only=True)
