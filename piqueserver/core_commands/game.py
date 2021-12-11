@@ -97,8 +97,13 @@ def switch(connection, player, team = None):
                                                              player.team.name))
         protocol.irc_say('* %s silently switched teams' % player.name)
     else:
-        player.respawn_time = protocol.respawn_time
-        player.set_team(new_team)
+        if old_team.spectator: # respawn instantly
+            player.team = new_team
+            player.on_team_changed(old_team)
+            player.spawn()
+        else:
+            player.respawn_time = protocol.respawn_time
+            player.set_team(new_team)
         protocol.send_chat('%s switched teams' % player.name, irc=True)
 
 
