@@ -318,3 +318,14 @@ def fog(connection, *args):
         return ('Fog color changed successfully\n'
                 'Warning: fog color set to same color as before')
     return 'Fog color changed successfully'
+
+
+@command(admin_only=True)
+def resetfog(connection):
+    protocol = connection.protocol
+    
+    protocol.set_fog_color(
+        getattr(protocol.map_info.info, 'fog', protocol.default_fog)
+    )
+
+    return 'Fog color reset'
