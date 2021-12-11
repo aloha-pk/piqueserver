@@ -77,6 +77,7 @@ def switch(connection, player, team=None):
     """
     protocol = connection.protocol
     new_team = protocol.blue_team
+    old_team = player.team
 
     if not player.team.spectator:
         new_team = player.team.other
@@ -96,10 +97,14 @@ def switch(connection, player, team=None):
                                                              player.team.name))
         protocol.irc_say('* %s silently switched teams' % player.name)
     else:
-        player.respawn_time = protocol.respawn_time
-        player.set_team(new_team)
+        if old_team.spectator:
+            player.team = new_team
+            player.on_team_changed(old_team)
+            player.spawn()
+        else:
+            player.respawn_time = protocol.respawn_time
+            player.set_team(new_team)
         protocol.broadcast_chat('%s switched teams' % player.name, irc=True)
-
 
 @command('setbalance', admin_only=True)
 def set_balance(connection, value):
@@ -321,7 +326,7 @@ def fog(connection, *args):
 @command(admin_only=True)
 def resetfog(connection):
     protocol = connection.protocol
-    
+
     protocol.set_fog_color(
         getattr(protocol.map_info.info, 'fog', protocol.default_fog)
     )
