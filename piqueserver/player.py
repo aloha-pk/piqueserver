@@ -348,25 +348,6 @@ class FeatureConnection(ServerConnection):
         log.info("'{username}' logged in as {user_type}", username=self.name,
                  user_type=user_type)
 
-        if user_type == 'admin':
-            self.admin = True
-            self.speedhack_detect = False
-
-        # notify of new release to admin on /login
-        new_release = self.protocol.new_release
-        if user_type == 'admin' and new_release:
-            self.send_chat("!" * 30)
-            self.send_chat(format_release(new_release))
-            self.send_chat("!" * 30)
-
-        self.user_types.add(user_type)
-        rights = set(commands.get_rights(user_type))
-        self.rights.update(rights)
-        if verbose:
-            message = ' logged in as %s' % (user_type)
-            self.send_chat('You' + message)
-            self.protocol.irc_say("* " + self.name + message)
-
     def timed_out(self):
         if self.name is not None:
             log.info('%s timed out' % self.printable_name)
