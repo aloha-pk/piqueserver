@@ -65,6 +65,24 @@ class BaseAuthBackend(abc.ABC):
         connection.admin = False
         connection.speedhack_detect = True
 
+
+def notify_login(connection) -> None:
+    details = connection.details
+    connection.on_user_login(details[0], True)
+    if details[0] == details[1]:
+        user = details[0]
+    else:
+        user = '{} ({})'.format(*details)
+    message = '{} logged in as {}'
+    connection.send_chat(message.format('You', user))
+    connection.protocol.irc_say('* ' + message.format(connection.name, user))
+
+def notify_logout(connection) -> None:
+    connection.on_user_logout(connection.details[0])
+    connection.send_chat('Logout successful')
+    connection.protocol.irc_say('* {} logged out'.format(connection.name))
+
+
 class ConfigAuthBackend(BaseAuthBackend):
     """Auth backend that uses the [passwords] section of the connfig for
     authentication"""
