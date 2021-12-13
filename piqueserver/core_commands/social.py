@@ -1,30 +1,52 @@
 from piqueserver.commands import (command, get_player, join_arguments,
                                   player_only)
+from piqueserver.auth import AuthError, AuthLimitExceeded, notify_login, notify_logout
 
+S_AUTH_LIMITED_EXCEEDED = "Login attempt limit exceeded"
 
 @command()
 @player_only
-def login(connection, password):
+def login(connection, username, password):
     """
     Log in if you're staff or a trusted member of this server
-    /login <password>
+    /login <username> <password>
     You will be kicked if a wrong password is given 3 times in a row
     """
-    for user_type, passwords in connection.protocol.passwords.items():
-        if password in passwords:
-            if user_type in connection.user_types:
-                return "You're already logged in as %s" % user_type
-            return connection.on_user_login(user_type, True)
-    if connection.login_retries is None:
-        connection.login_retries = connection.protocol.login_retries - 1
-    else:
-        connection.login_retries -= 1
-    if not connection.login_retries:
-        connection.kick('Ran out of login attempts')
-        return
-    return 'Invalid password - you have %s tries left' % (
-        connection.login_retries)
+    if connection.login_disabled:
+        # player has already exceeded the auth limit
+        return S_AUTH_LIMITED_EXCEEDED
+    try:
+        auth = connection.protocol.auth_backend
+        user_type = auth.login(connection, (username, password))
+        connection.login_details = (user_type, username)
+        if user_type in connection.user_types:
+            return "You're already logged in as {}".format(user_type)
+        auth.reset_user_type(connection)
+        auth.set_user_type(connection, user_type)
+        notify_login(connection)
+    except AuthError as ae:
+        return str(ae)
+    except AuthLimitExceeded as ale:
+        connection.login_disabled = True
+        if ale.kick:
+            message = ale.message or S_AUTH_LIMITED_EXCEEDED
+            connection.kick(message)
 
+@command
+@player_only
+def logout(connection):
+    """
+    Log out, if you're logged in
+    /logout
+    """
+    auth = connection.protocol.auth_backend
+    valid_user_types = auth.get_player_user_types()
+    if not any(t in connection.user_types for
+               t in valid_user_types):
+        return "You are not logged in"
+    auth.on_logout(connection)
+    auth.reset_user_type(connection)
+    notify_logout(connection)
 
 @command()
 def pm(connection, value, *arg):
