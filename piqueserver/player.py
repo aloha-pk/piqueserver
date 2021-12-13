@@ -31,7 +31,8 @@ class FeatureConnection(ServerConnection):
         self.last_switch = None
         self.mute = False
         self.deaf = False
-        self.login_retries = None
+        self.login_details = None
+        self.login_disabled = False
         self.god = False
         self.god_build = False
         self.fly = False
@@ -390,6 +391,9 @@ class FeatureConnection(ServerConnection):
     def on_user_login(self, user_type, verbose=True):
         log.info("'{username}' logged in as {user_type}", username=self.name,
                  user_type=user_type)
+
+    def on_user_logout(self, user_type):
+        pass
 
     def timed_out(self):
         if self.name is not None:
