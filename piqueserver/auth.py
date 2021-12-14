@@ -118,8 +118,8 @@ class ConfigAuthBackend(BaseAuthBackend):
         for user_type, passwords in self.passwords.get().items():
             if password in passwords:
                 if (connection.login_info and
-                    connection.login_info[0] == password):
-                    raise AuthAlreadyLoggedIn()
+                    user_type in connection.login_info[0]):
+                    raise piqueserver.auth.AuthAlreadyLoggedIn()
                 return ([user_type], None)
 
         # HACK:
