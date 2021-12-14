@@ -75,10 +75,11 @@ class ConsoleInput(LineReceiver):
 
     def __init__(self, protocol):
         self.protocol = protocol
+        auth = protocol.auth_backend
         self.user_types = AttributeSet(['admin', 'console'])
         self.rights = AttributeSet()
         for user_type in self.user_types:
-            self.rights.update(commands.get_rights(user_type))
+            self.rights.update(auth.get_rights(user_type))
 
     def lineReceived(self, line):
         if not line:

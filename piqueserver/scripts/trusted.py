@@ -22,6 +22,8 @@ S_RESULT_TRUSTED = 'Trusted user'
 def trust(connection, player):
     player = get_player(connection.protocol, player)
     player.on_user_login('trusted', False)
+    auth = connection.protocol.auth_backend
+    auth.set_user_type(player, 'trusted')
     player.send_chat(S_GRANTED_SELF)
     return S_GRANTED.format(player=player.name)
 

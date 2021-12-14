@@ -206,8 +206,9 @@ class IRCClientFactory(protocol.ClientFactory):
         self.admin = True
         self.user_types = AttributeSet(['admin', 'irc'])
         self.rights = AttributeSet()
+        auth = server.auth_backend
         for user_type in self.user_types:
-            self.rights.update(commands.get_rights(user_type))
+            self.rights.update(auth.get_rights(user_type))
         self.server = server
         self.nickname = config.get('nickname',
                                    'piqueserver%s' % random.randrange(0, 99))

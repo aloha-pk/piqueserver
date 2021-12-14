@@ -35,6 +35,9 @@ def reloadconfig(connection):
 def apply_script(protocol, connection, config):
     class PassreloadProtocol(protocol):
         def reapply_config(self):
-            commands.update_rights(config.get('rights', {}))
+            auth = self.auth_backend
+            for connection in list(self.connections.values()):
+                for user_type in connection.user_types:
+                    auth.set_user_type(connection, user_type)
 
     return PassreloadProtocol, connection
