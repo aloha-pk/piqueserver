@@ -1,6 +1,8 @@
 import abc
-from typing import Tuple, List
+from typing import List
 from pyspades.types import AttributeSet
+import piqueserver
+from piqueserver.config import config
 
 
 class AuthError(Exception):
@@ -84,7 +86,45 @@ def notify_logout(connection) -> None:
 
 
 class ConfigAuthBackend(BaseAuthBackend):
-    """Auth backend that uses the [passwords] section of the connfig for
-    authentication"""
-    def login(self, username):
+    """
+    Auth backend that uses the [passwords] section of the config for authentication
+    """
+
+    def __init__(self):
+        self.passwords = config.option('passwords', default={})
+        self.rights = config.option('rights', default={})
+        self.max_tries = 3
+
+    def login(self, connection, username, password) -> str:
+        if username not in self.passwords.get():
+            self.invalid_password(connection)
+        if password not in self.passwords.get()[username]:
+            self.invalid_password(connection)
+        return username
+
+    def invalid_password(self, connection):
+        # HACK:
+        # raise through full names of exceptions instead of referring to them locally
+        # this prevents some weirdness with catching exceptions in /login
+        connection.login_tries += 1
+        if connection.login_tries >= self.max_tries:
+            raise piqueserver.auth.AuthLimitExceeded('Ran out of login attempts', kick = True)
+        raise piqueserver.auth.AuthError('Invalid password - you have {} tries left'
+            .format(self.max_tries - connection.login_tries))
+
+    def on_logout(self, connection) -> str:
         pass
+
+    def has_permission(self, connection, action: str) -> bool:
+        if connection.admin:
+            return True
+        for user_type in connection.user_types:
+            if action in self.get_rights():
+                return True
+        return False
+
+    def get_player_user_types(self) -> List[str]:
+        return self.passwords.get().keys()
+
+    def get_rights(self, user_type: str) -> List[str]:
+        return self.rights.get().get(user_type, [])
