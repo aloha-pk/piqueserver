@@ -20,25 +20,26 @@ def login(connection, *details):
         # player has already exceeded the auth limit
         return S_AUTH_LIMITED_EXCEEDED
     
+    auth = connection.protocol.auth_backend
+    
     async def _login():
-        auth = connection.protocol.auth_backend
         try:
             connection.login_info = await auth.login(connection, *details)
             auth.reset_user_type(connection)
             user_types = connection.login_info[0]
             for user_type in user_types:
                 auth.set_user_type(connection, user_type)
-            return notify_login(connection)
+            notify_login(connection)
         except AuthAlreadyLoggedIn:
-            return "You're already logged in as {}".format(auth.get_user_info(connection))
+            connection.send_chat("You're already logged in as {}".format(auth.get_user_info(connection)))
         except AuthError as ae:
-            return str(ae)
+            connection.send_chat(str(ae))
         except AuthLimitExceeded as ale:
             connection.login_disabled = True
             message = ale.message or S_AUTH_LIMITED_EXCEEDED
             if ale.kick:
                 connection.kick(message)
-            return message
+            connection.send_chat(message)
 
     ensureDeferred(_login())
 
@@ -51,10 +52,13 @@ def logout(connection):
     """
     async def _logout():
         auth = connection.protocol.auth_backend
+        
         valid_user_types = auth.get_all_user_types()
         if not any(t in connection.user_types for
                 t in valid_user_types):
-            return "You are not logged in"
+            connection.send_chat("You are not logged in")
+            return
+
         await auth.on_logout(connection)
         auth.reset_user_type(connection)
         notify_logout(connection)
