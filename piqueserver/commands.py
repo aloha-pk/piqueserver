@@ -145,12 +145,8 @@ def restrict(*user_types: List[str]) -> Callable:
 def has_permission(f, connection):
     if not f.user_types:
         return True
-    elif f.command_name in connection.rights:
-        return True
-    elif connection.admin:
-        return True
-    else:
-        return False
+    auth = connection.protocol.auth_backend
+    return auth.has_permission(connection, f.command_name)
 
 
 CommandHelp = namedtuple("CommandHelp", ["description", "usage", "info"])
