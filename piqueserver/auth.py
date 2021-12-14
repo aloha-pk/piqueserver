@@ -1,8 +1,11 @@
 import abc
-from typing import List
+from typing import Tuple, List, Any
 from pyspades.types import AttributeSet
 import piqueserver
 from piqueserver.config import config
+
+
+LoginInfo = Tuple[str, Any] # user_type, and anything the backend wants to store
 
 
 class AuthError(Exception):
@@ -17,11 +20,12 @@ class AuthLimitExceeded(Exception):
 
 class BaseAuthBackend(abc.ABC):
     @abc.abstractmethod
-    def login(self, connection, username, password) -> str:
+    def login(self, connection, *details) -> LoginInfo:
         """
         Verifies details and returns a user_type, e.g. 'admin'.
         Raises AuthError if the details are incorrect.
         Raises AuthLimitExceeded if the backend deems too many incorrect attempts have been made.
+        Raises ValueError if not enough details have been passed in
         """
         pass
 
@@ -53,6 +57,14 @@ class BaseAuthBackend(abc.ABC):
         """
         pass
 
+    @abc.abstractmethod
+    def get_user_info(self, connection) -> str:
+        """
+        Accesses connection.login_info and returns a human-readable description of a
+        player's current login status, for use in notify_login.
+        """
+        pass
+
     def set_user_type(self, connection, user_type: str) -> None:
         if user_type == 'admin':
             connection.admin = True
@@ -69,18 +81,15 @@ class BaseAuthBackend(abc.ABC):
 
 
 def notify_login(connection) -> None:
-    details = connection.login_details
-    connection.on_user_login(details[0], True)
-    if details[0] == details[1]:
-        user = details[0]
-    else:
-        user = '{} ({})'.format(*details)
+    auth = connection.protocol.auth_backend
+    connection.on_user_login(connection.login_info[0], True)
+    user_info = auth.get_user_info(connection)
     message = '{} logged in as {}'
-    connection.protocol.irc_say('* ' + message.format(connection.name, user))
-    return message.format('You', user)
+    connection.protocol.irc_say('* ' + message.format(connection.name, user_info))
+    return message.format('You', user_info)
 
 def notify_logout(connection) -> None:
-    connection.on_user_logout(connection.login_details[0])
+    connection.on_user_logout(connection.login_info[0])
     connection.protocol.irc_say('* {} logged out'.format(connection.name))
     return 'Logout successful'
 
@@ -95,14 +104,15 @@ class ConfigAuthBackend(BaseAuthBackend):
         self.rights = config.option('rights', default={})
         self.max_tries = 3
 
-    def login(self, connection, username, password) -> str:
-        if username not in self.passwords.get():
-            self.invalid_password(connection)
-        if password not in self.passwords.get()[username]:
-            self.invalid_password(connection)
-        return username
+    def login(self, connection, *details) -> LoginInfo:
+        if len(details) > 1:
+            raise ValueError("Too many arguments")
+        password = details[0]
 
-    def invalid_password(self, connection):
+        for user_type, passwords in self.passwords.get().items():
+            if password in passwords:
+                return (user_type, None)
+
         # HACK:
         # raise through full names of exceptions instead of referring to them locally
         # this prevents some weirdness with catching exceptions in /login
@@ -119,7 +129,7 @@ class ConfigAuthBackend(BaseAuthBackend):
         if connection.admin:
             return True
         for user_type in connection.user_types:
-            if action in self.get_rights():
+            if action in self.get_rights(user_type):
                 return True
         return False
 
@@ -128,3 +138,6 @@ class ConfigAuthBackend(BaseAuthBackend):
 
     def get_rights(self, user_type: str) -> List[str]:
         return self.rights.get().get(user_type, [])
+
+    def get_user_info(self, connection) -> str:
+        return connection.login_info[0] # just the user type

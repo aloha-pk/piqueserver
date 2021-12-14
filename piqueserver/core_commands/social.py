@@ -6,19 +6,21 @@ S_AUTH_LIMITED_EXCEEDED = "Login attempt limit exceeded"
 
 @command()
 @player_only
-def login(connection, username, password):
+def login(connection, *details):
     """
     Log in if you're staff or a trusted member of this server
-    /login <username> <password>
+    /login <details>
     You will be kicked if a wrong password is given 3 times in a row
     """
+    if not details:
+        return "Please provide login details"
     if connection.login_disabled:
         # player has already exceeded the auth limit
         return S_AUTH_LIMITED_EXCEEDED
     try:
         auth = connection.protocol.auth_backend
-        user_type = auth.login(connection, username, password)
-        connection.login_details = (user_type, username)
+        connection.login_info = auth.login(connection, *details)
+        user_type = connection.login_info[0]
         if user_type in connection.user_types:
             return "You're already logged in as {}".format(user_type)
         auth.reset_user_type(connection)
