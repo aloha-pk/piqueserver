@@ -94,7 +94,7 @@ respawn_time_option = config.option(
 respawn_waves = config.option('respawn_waves', default=False)
 game_mode = config.option('game_mode', default='ctf')
 random_rotation = config.option('random_rotation', default=False)
-auth_backend = config.option('auth_backend', default='piquespades.auth.ConfigAuthBackend')
+auth_backend = config.option('auth_backend', default='piqueserver.auth.ConfigAuthBackend')
 logfile = logging_config.option('logfile', default='./logs/log.txt')
 loglevel = logging_config.option('loglevel', default='info')
 map_rotation = config.option('rotation', default=['classicgen', 'random'],
