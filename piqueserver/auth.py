@@ -67,20 +67,20 @@ class BaseAuthBackend(abc.ABC):
 
 
 def notify_login(connection) -> None:
-    details = connection.details
+    details = connection.login_details
     connection.on_user_login(details[0], True)
     if details[0] == details[1]:
         user = details[0]
     else:
         user = '{} ({})'.format(*details)
     message = '{} logged in as {}'
-    connection.send_chat(message.format('You', user))
     connection.protocol.irc_say('* ' + message.format(connection.name, user))
+    return message.format('You', user)
 
 def notify_logout(connection) -> None:
-    connection.on_user_logout(connection.details[0])
-    connection.send_chat('Logout successful')
+    connection.on_user_logout(connection.login_details[0])
     connection.protocol.irc_say('* {} logged out'.format(connection.name))
+    return 'Logout successful'
 
 
 class ConfigAuthBackend(BaseAuthBackend):

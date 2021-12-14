@@ -23,7 +23,7 @@ def login(connection, username, password):
             return "You're already logged in as {}".format(user_type)
         auth.reset_user_type(connection)
         auth.set_user_type(connection, user_type)
-        notify_login(connection)
+        return notify_login(connection)
     except AuthError as ae:
         return str(ae)
     except AuthLimitExceeded as ale:
@@ -47,7 +47,7 @@ def logout(connection):
         return "You are not logged in"
     auth.on_logout(connection)
     auth.reset_user_type(connection)
-    notify_logout(connection)
+    return notify_logout(connection)
 
 @command()
 def pm(connection, value, *arg):
