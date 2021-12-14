@@ -1,13 +1,12 @@
 from piqueserver.commands import (command, get_player, join_arguments,
                                   player_only)
 from piqueserver.auth import AuthAlreadyLoggedIn, AuthError, AuthLimitExceeded, notify_login, notify_logout
-from twisted.internet.defer import ensureDeferred
 
 S_AUTH_LIMITED_EXCEEDED = "Login attempt limit exceeded"
 
 @command()
 @player_only
-def login(connection, *details):
+async def login(connection, *details):
     """
     Log in if you're staff or a trusted member of this server
     /login <details>
@@ -22,48 +21,42 @@ def login(connection, *details):
     
     auth = connection.protocol.auth_backend
     
-    async def _login():
-        try:
-            connection.login_info = await auth.login(connection, *details)
-            auth.reset_user_type(connection)
-            user_types = connection.login_info[0]
-            for user_type in user_types:
-                auth.set_user_type(connection, user_type)
-            notify_login(connection)
-        except AuthAlreadyLoggedIn:
-            connection.send_chat("You're already logged in as {}".format(auth.get_user_info(connection)))
-        except AuthError as ae:
-            connection.send_chat(str(ae))
-        except AuthLimitExceeded as ale:
-            connection.login_disabled = True
-            message = ale.message or S_AUTH_LIMITED_EXCEEDED
-            if ale.kick:
-                connection.kick(message)
-            connection.send_chat(message)
-
-    ensureDeferred(_login())
+    try:
+        connection.login_info = await auth.login(connection, *details)
+        auth.reset_user_type(connection)
+        user_types = connection.login_info[0]
+        for user_type in user_types:
+            auth.set_user_type(connection, user_type)
+        notify_login(connection)
+    except AuthAlreadyLoggedIn:
+        return "You're already logged in as {}".format(auth.get_user_info(connection))
+    except AuthError as ae:
+        return str(ae)
+    except AuthLimitExceeded as ale:
+        connection.login_disabled = True
+        message = ale.message or S_AUTH_LIMITED_EXCEEDED
+        if ale.kick:
+            connection.kick(message)
+        return message
 
 @command()
 @player_only
-def logout(connection):
+async def logout(connection):
     """
     Log out, if you're logged in
     /logout
     """
-    async def _logout():
-        auth = connection.protocol.auth_backend
-        
-        valid_user_types = auth.get_all_user_types()
-        if not any(t in connection.user_types for
-                t in valid_user_types):
-            connection.send_chat("You are not logged in")
-            return
+    auth = connection.protocol.auth_backend
+    
+    valid_user_types = auth.get_all_user_types()
+    if not any(t in connection.user_types for
+            t in valid_user_types):
+        connection.send_chat("You are not logged in")
+        return
 
-        await auth.on_logout(connection)
-        auth.reset_user_type(connection)
-        notify_logout(connection)
-
-    ensureDeferred(_logout())
+    await auth.on_logout(connection)
+    auth.reset_user_type(connection)
+    notify_logout(connection)
 
 @command()
 def pm(connection, value, *arg):
