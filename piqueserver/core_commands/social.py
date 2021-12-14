@@ -17,7 +17,7 @@ def login(connection, username, password):
         return S_AUTH_LIMITED_EXCEEDED
     try:
         auth = connection.protocol.auth_backend
-        user_type = auth.login(connection, (username, password))
+        user_type = auth.login(connection, username, password)
         connection.login_details = (user_type, username)
         if user_type in connection.user_types:
             return "You're already logged in as {}".format(user_type)
@@ -28,11 +28,12 @@ def login(connection, username, password):
         return str(ae)
     except AuthLimitExceeded as ale:
         connection.login_disabled = True
+        message = ale.message or S_AUTH_LIMITED_EXCEEDED
         if ale.kick:
-            message = ale.message or S_AUTH_LIMITED_EXCEEDED
             connection.kick(message)
+        return message
 
-@command
+@command()
 @player_only
 def logout(connection):
     """

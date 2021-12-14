@@ -94,7 +94,7 @@ respawn_time_option = config.option(
 respawn_waves = config.option('respawn_waves', default=False)
 game_mode = config.option('game_mode', default='ctf')
 random_rotation = config.option('random_rotation', default=False)
-auth_backend = config.option('auth_backend', default=['piquespades.auth.ConfigAuthBackend'])
+auth_backend = config.option('auth_backend', default='piquespades.auth.ConfigAuthBackend')
 logfile = logging_config.option('logfile', default='./logs/log.txt')
 loglevel = logging_config.option('loglevel', default='info')
 map_rotation = config.option('rotation', default=['classicgen', 'random'],
@@ -360,7 +360,8 @@ class FeatureProtocol(ServerProtocol):
             self.ban_manager = bansubscribe.BanManager(self)
         backend = auth_backend.get()
         if backend:
-            self.auth_backend = extensions.load_auth_backend(backend, 'auth/')
+            backend_class = extensions.load_auth_backend(backend, 'auth/')
+            self.auth_backend = backend_class()
         self.start_time = time.time()
         self.end_calls = []
         # TODO: why is this here?
