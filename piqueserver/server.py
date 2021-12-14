@@ -341,6 +341,10 @@ class FeatureProtocol(ServerProtocol):
             # TODO: make this configurable
             pyspades.debug.open_debug_log(
                 os.path.join(config.config_dir, 'debug.log'))
+        backend = auth_backend.get()
+        if backend:
+            backend_class = extensions.load_auth_backend(backend, 'auth/')
+            self.auth_backend = backend_class()
         if ssh_enabled.get():
             from piqueserver.ssh import RemoteConsole
             self.remote_console = RemoteConsole(self)
@@ -358,10 +362,6 @@ class FeatureProtocol(ServerProtocol):
         if bans_config_urls.get():
             from piqueserver import bansubscribe
             self.ban_manager = bansubscribe.BanManager(self)
-        backend = auth_backend.get()
-        if backend:
-            backend_class = extensions.load_auth_backend(backend, 'auth/')
-            self.auth_backend = backend_class()
         self.start_time = time.time()
         self.end_calls = []
         # TODO: why is this here?
