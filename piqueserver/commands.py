@@ -195,45 +195,6 @@ def format_command_error(command_func: Callable, message: str, exception:
     else:
         return message
 
-# it might seem unecesary to reimplement half of the dict data type for
-# _rights, but previously this attribute was accessed and modified from
-# various places and that made things more confusing than the needed to be
-
-
-def add_rights(user_type: str, command_name: str) -> None:
-    """
-    Give the user type a new right
-
-    >>> add_rights("knights", "say_ni")
-    """
-    _rights.setdefault(user_type, []).append(command_name)
-
-
-def get_rights(user_type: str) -> List[str]:
-    """
-    Get a list of rights a specific user type has.
-
-    >>> add_rights("knights", "say_ni")
-    >>> get_rights("knights")
-    ["say_ni"]
-    >>> get_rights("arthur")
-    []
-    """
-    r = _rights.get(user_type, [])
-    return r
-
-
-def update_rights(rights: Dict):
-    """
-    Update the rights of all users according to the input dictionary. This
-    is currently only here for when the config needs to be reloaded.
-
-    >>> update_rights({"knights": ["say_ni"]})
-    >>> get_rights("knights")
-    ["say_ni"]
-    """
-    _rights.update(rights)
-
 
 def admin(func: Callable) -> Callable:
     """
