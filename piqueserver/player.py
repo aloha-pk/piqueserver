@@ -32,6 +32,7 @@ class FeatureConnection(ServerConnection):
         self.mute = False
         self.deaf = False
         self.login_details = None
+        self.login_tries = 0
         self.login_disabled = False
         self.god = False
         self.god_build = False
