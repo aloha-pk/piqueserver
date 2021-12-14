@@ -24,7 +24,7 @@ import warnings
 from collections import namedtuple
 import textwrap
 import functools
-from typing import Dict, List, Callable
+from typing import Awaitable, Dict, List, Callable
 
 from twisted.logger import Logger
 
@@ -349,14 +349,14 @@ def get_truthy(value):
         return None
 
 
-def handle_command(connection, command, parameters):
+async def handle_command(connection, command, parameters):
     """
     Public facing function to run a command, given the connection, a command
     name, and a list of parameters.
 
     Will log the command.
     """
-    result = _handle_command(connection, command, parameters)
+    result = await _handle_command(connection, command, parameters)
 
     if result == False:
         parameters = ['***'] * len(parameters)
@@ -368,7 +368,7 @@ def handle_command(connection, command, parameters):
 
     return result
 
-def _handle_command(connection, command, parameters):
+async def _handle_command(connection, command, parameters):
     command = command.lower()
     try:
         command_name = _alias_map.get(command, command)
@@ -392,7 +392,11 @@ def _handle_command(connection, command, parameters):
     msg = None
 
     try:
-        return command_func(connection, *parameters)
+        ret = command_func(connection, *parameters)
+        if inspect.iscoroutine(ret):
+            return await ret
+        else:
+            return ret
     # TODO: remove all of this catching. Commands should deal with invalid
     # parameters themselves. Instead, we should catch ALL Exceptions and
     # make an attempt at displaying them nicely in format_command_error

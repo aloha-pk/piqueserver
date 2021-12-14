@@ -21,6 +21,7 @@ from typing import List
 import traceback
 
 from twisted.internet import reactor
+from twisted.internet.defer import ensureDeferred
 from twisted.protocols.basic import LineReceiver
 
 from pyspades.types import AttributeSet
@@ -85,14 +86,17 @@ class ConsoleInput(LineReceiver):
         if not line:
             return
 
-        try:
-            result = commands.handle_input(self, line.decode())
-        # pylint: disable=broad-except
-        except Exception:
-            traceback.print_exc()
-        else:
-            if result is not None:
-                print(result)
+        async def _run_command():
+            try:
+                result = await commands.handle_input(self, line.decode())
+            # pylint: disable=broad-except
+            except Exception:
+                traceback.print_exc()
+            else:
+                if result is not None:
+                    print(result)
+        
+        ensureDeferred(_run_command())
 
     # methods used to emulate the behaviour of regular Connection objects to
     # prevent errors when command writers didn't test that their scripts would

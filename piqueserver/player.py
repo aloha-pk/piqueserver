@@ -1,6 +1,8 @@
+import traceback
 from typing import List, Tuple, Optional, Union
 
 from twisted.internet import reactor
+from twisted.internet.defer import ensureDeferred
 from twisted.logger import Logger
 
 from piqueserver import commands
@@ -115,11 +117,17 @@ class FeatureConnection(ServerConnection):
         ServerConnection.on_disconnect(self)
 
     def on_command(self, command: str, parameters: List[str]) -> None:
-        result = commands.handle_command(self, command, parameters)
+        async def _run_command():
+            try:
+                result = await commands.handle_command(self, command, parameters)
+            except Exception:
+                traceback.print_exc()
+            else:
+                if result:
+                    for i in reversed(result.split("\n")):
+                        self.send_chat(i)
 
-        if result:
-            for i in reversed(result.split("\n")):
-                self.send_chat(i)
+        ensureDeferred(_run_command())
 
     def _can_build(self) -> bool:
         if not self.building:

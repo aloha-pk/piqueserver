@@ -19,7 +19,9 @@ import re
 import random
 from itertools import groupby, chain
 from operator import attrgetter
+import traceback
 from typing import List
+from twisted.internet.defer import ensureDeferred
 
 from twisted.words.protocols import irc
 from twisted.internet import reactor, protocol
@@ -156,9 +158,17 @@ class IRCBot(irc.IRCClient):
             self.unaliased_name = user
             self.name = prefix + alias
             user_input = msg[len(self.factory.commandprefix):]
-            result = commands.handle_input(self, user_input)
-            if result is not None:
-                self.send("{}: {}".format(user, result))
+
+            async def _run_command():
+                try:
+                    result = await commands.handle_input(self, user_input)
+                except Exception:
+                    traceback.print_exc()
+                else:
+                    if result is not None:
+                        self.send("{}: {}".format(user, result))
+            
+            ensureDeferred(_run_command())
 
     @channel
     def userLeft(self, user, irc_channel):
