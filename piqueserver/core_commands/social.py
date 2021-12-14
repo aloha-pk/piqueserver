@@ -10,7 +10,6 @@ async def login(connection, *details):
     """
     Log in if you're staff or a trusted member of this server
     /login <details>
-    You will be kicked if a wrong password is given 3 times in a row
     """
     if not details:
         return "Please provide login details"
