@@ -45,12 +45,12 @@ def check_game_mode(game_mode_name):
     return game_mode_name not in ('ctf', 'tc')
 
 
-def load_auth_backend(backend_name, backend_dir):
+def load_backend(backend_name, backend_dir):
     '''Load backend script and extract the class from its module.
     
     Args:
         backend_name: The name of backend to be loaded
-        backend_dir: The path to the corresponding auth backend directory
+        backend_dir: The path to the corresponding backend directory
 
     Return:
         backend: The loaded module object for the backend
@@ -64,10 +64,10 @@ def load_auth_backend(backend_name, backend_dir):
     spec = spec_scripts or spec_global
     if not spec:
         log.error(
-            "auth backend '{}' not found in either {} directory or global scope".format(
+            "backend '{}' not found in either {} directory or global scope".format(
                 backend_name, backend_dir))
         return
-    spec.name = 'piqueserver._auth_namespace.{}'.format(backend[0])
+    spec.name = 'piqueserver._backend_namespace.{}'.format(backend[0])
     spec.loader.name = spec.name
     # load module, extract class
     try:
@@ -75,7 +75,7 @@ def load_auth_backend(backend_name, backend_dir):
         spec.loader.exec_module(module)
         return getattr(module, backend[1])
     except Exception as e:
-        log.failure("Error while loading auth backend {}: {!r}".format(
+        log.failure("Error while loading backend {}: {!r}".format(
             backend_name, e))
 
     return None
