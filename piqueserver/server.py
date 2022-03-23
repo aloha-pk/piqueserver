@@ -343,7 +343,7 @@ class FeatureProtocol(ServerProtocol):
         self.set_god_build = set_god_build.get()
         backend = auth_backend.get()
         if backend:
-            backend_class = extensions.load_auth_backend(backend, 'auth/')
+            backend_class = extensions.load_backend(backend, 'auth/')
             self.auth_backend = backend_class()
         if ssh_enabled.get():
             from piqueserver.ssh import RemoteConsole
