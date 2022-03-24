@@ -26,9 +26,12 @@ class BaseAuthBackend(abc.ABC):
     async def login(self, connection, *details) -> LoginInfo:
         """
         Verifies details and returns a user_type, e.g. 'admin'.
+
         Raises AuthError if the details are incorrect.
+
         Raises AuthLimitExceeded if the backend deems too many incorrect attempts have been made.
-        Raises ValueError if not enough details have been passed in
+
+        Raises ValueError if not enough details have been passed in.
         """
         pass
 
