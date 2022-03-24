@@ -53,7 +53,7 @@ from piqueserver.networkdict import NetworkDict
 from piqueserver.player import FeatureConnection
 from piqueserver.release import check_for_releases, format_release
 from piqueserver.scheduler import Scheduler
-from piqueserver.utils import as_deferred, EndCall
+from piqueserver.utils import ensure_dir_exists, as_deferred, EndCall
 from piqueserver.bansubscribe import bans_config_urls
 from pyspades.bytes import NoDataLeft
 from pyspades.constants import CTF_MODE, ERROR_SHUTDOWN, TC_MODE
@@ -173,11 +173,6 @@ cmd_antispam_enable = config.option("enable_command_ratelimit", True)
 cmd_command_limit_size = config.option("command_ratelimit_amount", 4)
 cmd_command_limit_time = config.option(
     "command_ratelimit_period", "5s", cast=cast_duration)
-
-
-def ensure_dir_exists(filename: str) -> None:
-    d = os.path.dirname(filename)
-    os.makedirs(d, exist_ok=True)
 
 
 def random_choice_cycle(choices):
