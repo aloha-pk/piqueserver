@@ -318,7 +318,10 @@ cdef class ExistingPlayer(Loader):
         self.tool = reader.readByte(True)
         self.kills = reader.readInt(True, False)
         self.color = read_color(reader)
-        self.name = decode(reader.readString()) # 16 bytes
+        try:
+            self.name = decode(reader.readString()) # 16 bytes
+        except:
+            self.name = "Deuce"
 
     cpdef write(self, ByteWriter writer):
         writer.writeByte(self.id, True)
