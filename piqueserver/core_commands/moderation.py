@@ -124,7 +124,9 @@ def banip(connection, ip, *arg):
     """
     duration, reason = get_ban_arguments(connection, arg)
     try:
-        connection.protocol.ban_manager.add_ban(ip, None, reason, duration)
+        error_message = connection.protocol.ban_manager.add_ban(ip, None, reason, duration)
+        if error_message:
+            return error_message
     except ValueError:
         return 'Invalid IP address/network'
     reason = ': ' + reason if reason is not None else ''
@@ -143,10 +145,10 @@ def unban(connection, ip):
     /unban <ip/network>
     """
     try:
-        connection.protocol.ban_manager.remove_ban(ip)
-        return 'IP unbanned'
+        result = connection.protocol.ban_manager.remove_ban(ip)
+        return '{} IP(s) unbanned'.format(result)
     except KeyError:
-        return 'IP not found in ban list'
+        return 'IP/network not found in ban list'
 
 
 @command('undoban', admin_only=True)
