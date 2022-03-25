@@ -102,7 +102,7 @@ class BaseBanManager(abc.ABC):
 
         if self.banpublish_update_callback is not None:
             if not callable(self.banpublish_update_callback):
-                log.error(f"BanPublish callback is set incorrectly: expected callable, got {type(self.banpublish_update_callback)}")
+                log.error(f'BanPublish callback is set incorrectly: expected callable type, got {type(self.banpublish_update_callback)}')
                 return
             self.banpublish_update_callback()
 
@@ -117,20 +117,19 @@ class DefaultBanManager(BaseBanManager):
 
         self.database = NetworkDict()
         bans_config = config.section('bans')
-        self.bans_file = bans_config.option('file', default='bans.txt')
+        self.bans_file = bans_config.option('file', default = 'bans.txt')
 
         # attempt to load a saved bans list
         try:
             with open(os.path.join(config.config_dir, self.bans_file.get()), 'r') as f:
                 self.database.read_list(json.load(f))
-            log.debug("Loaded {count} bans", count=len(self.database))
+            log.debug(f'Loaded {len(self.database)} bans')
         except FileNotFoundError:
-            log.debug("Skip loading bans: file unavailable",
-                      count=len(self.database))
+            log.debug('Skip loading bans: file unavailable')
         except IOError as e:
-            log.error('Could not read bans file ({}): {}'.format(self.bans_file.get(), e))
+            log.error(f'Could not read bans file ({self.bans_file.get()}): {e}')
         except ValueError as e:
-            log.error('Could not parse bans file ({}): {}'.format(self.bans_file.get(), e))
+            log.error(f'Could not parse bans file ({self.bans_file.get()}): {e}')
             
         self.vacuum_loop = LoopingCall(self.vacuum_bans)
         # Run the vacuum every 6 hours, and kick it off it right now
@@ -199,13 +198,12 @@ class DefaultBanManager(BaseBanManager):
         if kicked_name:
             name = name or kicked_name
         if self.get_ban(network):
-            msg = 'IP/Network {network} is already banned'.format(network=network)
+            msg = f'IP/Network {network} is already banned'
             log.info(msg)
             return msg
         overlap = self.ban_overlaps(network)
         if overlap:
-            msg = 'IP/Network {network} overlaps with network {overlap}'.format(
-                network=network, overlap=overlap)
+            msg = f'IP/Network {network} overlaps with network {overlap}'
             log.info(msg)
             return msg
         if duration:
@@ -222,8 +220,7 @@ class DefaultBanManager(BaseBanManager):
         amount_removed = 0
         for net in to_remove:
             results = self.database.remove(net)
-            log.info('Removing banned network: {network} {results}',
-                    network=net, results=results)
+            log.info(f'Removing banned network: {net} {results}')
             amount_removed += len(results)
         self.save_bans()
         return amount_removed
@@ -232,8 +229,7 @@ class DefaultBanManager(BaseBanManager):
         try:
             result = self.database.pop()
             network = ip_network(result[0])
-            log.info('Removing banned network: {network} {ban}',
-                    network=network, ban=result[1])
+            log.info(f'Removing banned network: {network} {result[1]}')
             self.save_bans()
             return (network, *result[1])
         except KeyError:
@@ -246,9 +242,7 @@ class DefaultBanManager(BaseBanManager):
         start_time = reactor.seconds()
         with open(ban_file, 'w') as f:
             json.dump(self.database.make_list(), f, indent=2)
-        log.debug("Saving {count} bans took {time:.2f} seconds",
-                  count=len(self.database),
-                  time=reactor.seconds() - start_time)
+        log.debug(f'Saving {len(self.database)} bans took {reactor.seconds() - start_time :.2f} seconds')
 
         self.banpublish_update()
 
@@ -260,8 +254,7 @@ class DefaultBanManager(BaseBanManager):
             """do the actual clearing of bans"""
 
             bans_count = len(self.database)
-            log.info("starting ban vacuum with {count} bans",
-                     count=bans_count)
+            log.info(f'starting ban vacuum with {bans_count} bans')
             start_time = time.time()
 
             # create a copy of the items, so we don't have issues modifying
@@ -275,9 +268,7 @@ class DefaultBanManager(BaseBanManager):
                     # expired
                     del self.database[ban[0]]
                 yield
-            log.debug("Ban vacuum took {time:.2f} seconds, removed {count} bans",
-                      count=bans_count - len(self.database),
-                      time=time.time() - start_time)
+            log.debug(f'Ban vacuum took {time.time() - start_time :.2f} seconds, removed {bans_count - len(self.database)} bans')
             self.save_bans()
 
         # TODO: use cooperate() here instead, once you figure out why it's
