@@ -49,5 +49,5 @@ class PublishServer:
         bans = []
         for (network, _name, reason, timestamp) in self.protocol.ban_manager.get_all_bans():
             if timestamp is None or reactor.seconds() < timestamp:
-                bans.append({"ip": network, "reason": reason})
+                bans.append({"ip": str(network), "reason": reason})
         self.json_bans = json.dumps(bans)
