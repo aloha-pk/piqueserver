@@ -58,8 +58,9 @@ class FeatureConnection(ServerConnection):
         protocol = self.protocol
         client_ip = self.address[0]
 
-        if client_ip in self.protocol.bans:
-            name, reason, timestamp = self.protocol.bans[client_ip]
+        banned = self.protocol.ban_manager.get_ban(client_ip)
+        if banned:
+            name, reason, timestamp = banned[1:]
 
             if timestamp is not None and reactor.seconds() >= timestamp:
                 protocol.remove_ban(client_ip)
@@ -342,8 +343,8 @@ class FeatureConnection(ServerConnection):
             if self.address[0] == "127.0.0.1":
                 self.protocol.broadcast_chat("Ban ignored: localhost")
             else:
-                self.protocol.add_ban(self.address[0], reason, duration,
-                                      self.name)
+                self.protocol.ban_manager.add_ban(self.address[0], self.name,
+                                                  reason, duration)
 
     def send_lines(self, lines: List[str], key: str = 'unknown') -> None:
         """

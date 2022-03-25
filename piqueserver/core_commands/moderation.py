@@ -119,12 +119,12 @@ def pban(connection, value, *arg):
 @command(admin_only=True)
 def banip(connection, ip, *arg):
     """
-    Ban an ip
-    /banip <ip> [duration] [reason]
+    Ban an IP address or network
+    /banip <ip/network> [duration] [reason]
     """
     duration, reason = get_ban_arguments(connection, arg)
     try:
-        connection.protocol.add_ban(ip, reason, duration)
+        connection.protocol.ban_manager.add_ban(ip, None, reason, duration)
     except ValueError:
         return 'Invalid IP address/network'
     reason = ': ' + reason if reason is not None else ''
@@ -139,11 +139,11 @@ def banip(connection, ip, *arg):
 @command(admin_only=True)
 def unban(connection, ip):
     """
-    Unban an ip
-    /unban <ip>
+    Unban an IP address or network
+    /unban <ip/network>
     """
     try:
-        connection.protocol.remove_ban(ip)
+        connection.protocol.ban_manager.remove_ban(ip)
         return 'IP unbanned'
     except KeyError:
         return 'IP not found in ban list'
@@ -155,8 +155,8 @@ def undo_ban(connection, *arg):
     Undo last ban
     /undoban
     """
-    if len(connection.protocol.bans) > 0:
-        result = connection.protocol.undo_last_ban()
+    result = connection.protocol.ban_manager.undo_ban()
+    if result:
         return 'Ban for %s undone' % result[0]
     else:
         return 'No bans to undo!'

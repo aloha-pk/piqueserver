@@ -36,7 +36,7 @@ import aiohttp
 from enet import Address, Packet, Peer
 from twisted.internet import reactor, threads
 from twisted.internet.defer import Deferred, ensureDeferred
-from twisted.internet.task import LoopingCall, coiterate, deferLater
+from twisted.internet.task import LoopingCall, deferLater
 from twisted.internet.tcp import Port
 from twisted.logger import (FilteringLogObserver, Logger, LogLevel,
                             LogLevelFilterPredicate, globalLogBeginner,
@@ -87,6 +87,7 @@ logging_config = config.section('logging')
 team1_config = config.section('team1')
 team2_config = config.section('team2')
 
+bans_backend = bans_config.option('backend', default='piqueserver.bans.DefaultBanManager')
 bans_file = bans_config.option('file', default='bans.txt')
 bans_urls = bans_config.option('urls', [])
 respawn_time_option = config.option(
@@ -203,7 +204,7 @@ class FeatureTeam(Team):
 
 class FeatureProtocol(ServerProtocol):
     connection_class = FeatureConnection
-    bans = None
+    ban_manager = None
     ban_publish = None
     bansubscribe_manager = None
     auth_backend = None
@@ -271,22 +272,11 @@ class FeatureProtocol(ServerProtocol):
         self.default_cap_limit = cap_limit.get()
         self.advance_on_win = int(advance_on_win.get())
         self.win_count = itertools.count(1)
-        self.bans = NetworkDict()
 
-        # attempt to load a saved bans list
-        try:
-            with open(os.path.join(config.config_dir, bans_file.get()), 'r') as f:
-                self.bans.read_list(json.load(f))
-            log.debug("loaded {count} bans", count=len(self.bans))
-        except FileNotFoundError:
-            log.debug("skip loading bans: file unavailable",
-                      count=len(self.bans))
-        except IOError as e:
-            log.error('Could not read bans file ({}): {}'.format(
-                bans_file.get(), e))
-        except ValueError as e:
-            log.error('Could not parse bans file ({}): {}'.format(
-                bans_file.get(), e))
+        b_backend = bans_backend.get()
+        if b_backend:
+            b_backend_class = extensions.load_backend(b_backend, 'bans/')
+            self.ban_manager = b_backend_class(self)
 
         self.hard_bans = set()  # possible DDoS'ers are added here
         self.player_memory = deque(maxlen=100)
@@ -336,10 +326,10 @@ class FeatureProtocol(ServerProtocol):
         if user_blocks_only.get():
             self.user_blocks = set()
         self.set_god_build = set_god_build.get()
-        backend = auth_backend.get()
-        if backend:
-            backend_class = extensions.load_backend(backend, 'auth/')
-            self.auth_backend = backend_class()
+        a_backend = auth_backend.get()
+        if a_backend:
+            a_backend_class = extensions.load_backend(a_backend, 'auth/')
+            self.auth_backend = a_backend_class()
         if ssh_enabled.get():
             from piqueserver.ssh import RemoteConsole
             self.remote_console = RemoteConsole(self)
@@ -388,10 +378,6 @@ class FeatureProtocol(ServerProtocol):
             "release_notifications", default=True)
         if notify_new_releases.get():
             ensureDeferred(as_deferred(self.watch_for_releases()))
-
-        self.vacuum_loop = LoopingCall(self.vacuum_bans)
-        # Run the vacuum every 6 hours, and kick it off it right now
-        self.vacuum_loop.start(60 * 60 * 6, True)
 
         reactor.addSystemEventTrigger(
             'before', 'shutdown', lambda: ensureDeferred(self.shutdown()))
@@ -654,29 +640,6 @@ class FeatureProtocol(ServerProtocol):
         # give the connections some time to terminate
         await sleep(0.2)
 
-    def add_ban(self, ip, reason, duration, name=None):
-        """
-        Ban an ip with an optional reason and duration in seconds. If duration
-        is None, ban is permanent.
-        """
-        network = ip_network(str(ip), strict=False)
-        for connection in list(self.connections.values()):
-            if ip_address(connection.address[0]) in network:
-                name = connection.name
-                connection.kick(silent=True)
-        if duration:
-            duration = time.time() + duration
-        else:
-            duration = None
-        self.bans[ip] = (name or '(unknown)', reason, duration)
-        self.save_bans()
-
-    def remove_ban(self, ip):
-        results = self.bans.remove(ip)
-        log.info('Removing ban: {ip} {results}',
-                 ip=ip, results=results)
-        self.save_bans()
-
     async def watch_for_releases(self):
         """Starts a loop for `check_for_releases` and updates `self.new_release`."""
         while True:
@@ -686,57 +649,6 @@ class FeatureProtocol(ServerProtocol):
                 log.info(format_release(self.new_release))
                 log.info("#" * 60)
             await asyncio.sleep(86400)  # 24 hrs
-
-    def vacuum_bans(self):
-        """remove any bans that might have expired. This takes a while, so it is
-        split up over the event loop"""
-
-        def do_vacuum_bans():
-            """do the actual clearing of bans"""
-
-            bans_count = len(self.bans)
-            log.info("starting ban vacuum with {count} bans",
-                     count=bans_count)
-            start_time = time.time()
-
-            # create a copy of the items, so we don't have issues modifying
-            # while iteraing
-            for ban in list(self.bans.iteritems()):
-                ban_exipry = ban[1][2]
-                if ban_exipry is None:
-                    # entry never expires
-                    continue
-                if ban[1][2] < start_time:
-                    # expired
-                    del self.bans[ban[0]]
-                yield
-            log.debug("ban vacuum took {time:.2f} seconds, removed {count} bans",
-                      count=bans_count - len(self.bans),
-                      time=time.time() - start_time)
-            self.save_bans()
-
-        # TODO: use cooperate() here instead, once you figure out why it's
-        # swallowing errors. Perhaps try add an errback?
-        coiterate(do_vacuum_bans())
-
-    def undo_last_ban(self):
-        result = self.bans.pop()
-        self.save_bans()
-        return result
-
-    def save_bans(self):
-        ban_file = os.path.join(config.config_dir, bans_file.get())
-        ensure_dir_exists(ban_file)
-
-        start_time = reactor.seconds()
-        with open(ban_file, 'w') as f:
-            json.dump(self.bans.make_list(), f, indent=2)
-        log.debug("saving {count} bans took {time:.2f} seconds",
-                  count=len(self.bans),
-                  time=reactor.seconds() - start_time)
-
-        if self.ban_publish is not None:
-            self.ban_publish.update()
 
     def receive_callback(self, address: Address, data: bytes) -> int:
         """This hook receives the raw UDP data before it is processed by enet"""
