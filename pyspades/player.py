@@ -402,6 +402,10 @@ class ServerConnection(BaseConnection):
             return
         elif returned is not None:
             hit_amount = returned
+        # do this after so on_hit can still be used
+        if kill_type == WEAPON_KILL or kill_type == HEADSHOT_KILL:
+            if self.protocol.map.get_solid(*self.world_object.position.get()):
+                return
         player.hit(hit_amount, self, kill_type)
 
     @register_packet_handler(loaders.GrenadePacket)
