@@ -9,13 +9,16 @@ from piqueserver.config import config
 LoginInfo = Tuple[List[str], Any] # user_types, and anything the backend wants to store
 
 
-class AuthAlreadyLoggedIn(Exception):
+class AuthException(Exception):
     pass
 
-class AuthError(Exception):
+class AuthAlreadyLoggedIn(AuthException):
     pass
 
-class AuthLimitExceeded(Exception):
+class AuthError(AuthException):
+    pass
+
+class AuthLimitExceeded(AuthException):
     def __init__(self, message = None, kick = False):
         super().__init__(message)
         self.kick = kick
