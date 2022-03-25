@@ -158,7 +158,7 @@ def toggle_build(connection, player=None):
 
 
 @command('allowbuild', 'ab', admin_only=True)
-def toggle_build(connection, player=None):
+def allow_build(connection, player=None):
     """
     Allow building for everyone in the server or for a given player
     /allowbuild [player]
@@ -178,7 +178,7 @@ def toggle_build(connection, player=None):
 
 
 @command('disablebuild', 'db', admin_only=True)
-def toggle_build(connection, player=None):
+def disable_build(connection, player=None):
     """
     Disable building for everyone in the server or for a given player
     /disablebuild [player]
