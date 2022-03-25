@@ -67,10 +67,9 @@ class FeatureConnection(ServerConnection):
                 self.disconnect(ERROR_BANNED)
                 return
 
-        manager = self.protocol.ban_manager
-
-        if manager is not None:
-            reason = manager.get_ban(client_ip)
+        bansub_manager = self.protocol.bansubscribe_manager
+        if bansub_manager is not None:
+            reason = bansub_manager.get_ban(client_ip)
             if reason is not None:
                 log.info(('federated banned user (%s) attempted to join, '
                           'banned for %r') % (client_ip, reason))

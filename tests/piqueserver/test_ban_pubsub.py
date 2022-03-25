@@ -7,5 +7,5 @@ from piqueserver import bansubscribe
 
 class banmanagertest(unittest.TestCase):
     def test_create(self):
-        banm = bansubscribe.BanManager(Mock())
+        banm = bansubscribe.BanSubscribeManager(Mock())
         banm.loop.stop()
