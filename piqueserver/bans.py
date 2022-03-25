@@ -192,6 +192,9 @@ class DefaultBanManager(BaseBanManager):
         is None, ban is permanent.
         """
         network = ip_network(str(network), strict=False)
+        kicked_name = self.kick_network(network)
+        if kicked_name:
+            name = name or kicked_name
         if self.get_ban(network):
             msg = 'IP/Network {network} is already banned'.format(network=network)
             log.info()
@@ -202,9 +205,6 @@ class DefaultBanManager(BaseBanManager):
                 network=network, overlap=overlap)
             log.info(msg)
             return msg
-        kicked_name = self.kick_network(network)
-        if kicked_name:
-            name = kicked_name
         if duration:
             duration = time.time() + duration
         else:
