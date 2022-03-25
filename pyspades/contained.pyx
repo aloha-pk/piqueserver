@@ -321,7 +321,7 @@ cdef class ExistingPlayer(Loader):
         try:
             self.name = decode(reader.readString()) # 16 bytes
         except:
-            self.name = "Deuce"
+            self.name = ""
 
     cpdef write(self, ByteWriter writer):
         writer.writeByte(self.id, True)
