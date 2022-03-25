@@ -1,4 +1,5 @@
 import abc
+from ast import Str
 from typing import Tuple, Optional, List, Any
 
 import os
@@ -31,9 +32,9 @@ class BaseBanManager(abc.ABC):
         self.protocol = protocol
 
     @abc.abstractmethod
-    def ban_overlaps(self, network) -> bool:
+    def ban_overlaps(self, network) -> Optional[IPv4Network]:
         """
-        Check the ban database for the existence of any IPs/networks that are a superset of the one provided.
+        Check the ban database for the existence of any IPs/networks that overlap with the one provided.
         
         For example, if 192.168.1.0/23 is already banned, then calling ban_overlaps() with network 192.168.0.0/24 will return True.
         """
@@ -42,7 +43,7 @@ class BaseBanManager(abc.ABC):
     @abc.abstractmethod
     def get_ban(self, network) -> Optional[Ban]:
         """
-        Gets the first banned IP/network within the one provided
+        Get if IP is banned or is a subnet of a banned network. If so, return that ban.
         """
         pass
 
@@ -54,11 +55,13 @@ class BaseBanManager(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def add_ban(self, network, name, reason, duration) -> bool:
+    def add_ban(self, network, name, reason, duration) -> Optional[str]:
         """
         Add an IP/network to the ban database.
 
         name, reason and duration may be None.
+
+        Returns an optional error string message. Not an exception as they're non-fatal errors
         """
         pass
 
@@ -130,25 +133,25 @@ class DefaultBanManager(BaseBanManager):
         # Run the vacuum every 6 hours, and kick it off it right now
         self.vacuum_loop.start(60 * 60 * 6, True)
 
-    def ban_overlaps(self, network) -> bool:
+    def ban_overlaps(self, network) -> Optional[IPv4Network]:
         network1 = ip_network(str(network), strict=False)
         n1_from = int(network1[0])
         n1_to = int(network1[-1])
-
+    
         if network1.num_addresses == 1:
             # a single IP cannot overlap any network
             return False
-
+    
         for network2 in self.database.networks.keys():
             n2_from = int(network2[0])
             n2_to = int(network2[-1])
-
+    
             if (n2_from != n2_to and
                 (n2_from <= n1_from <= n2_to or
                  n1_from <= n2_from <= n1_to)):
-                return True
-
-        return False
+                return network2
+    
+        return None
 
     def get_ban(self, network) -> Optional[Ban]:
         try:
@@ -183,18 +186,22 @@ class DefaultBanManager(BaseBanManager):
             results.append((network, *value))
         return results
 
-    def add_ban(self, network, name, reason, duration) -> bool:
+    def add_ban(self, network, name, reason, duration) -> Optional[str]:
         """
         Ban an ip with an optional reason and duration in seconds. If duration
         is None, ban is permanent.
         """
         network = ip_network(str(network), strict=False)
         if self.get_ban(network):
-            log.info('IP/Network {network} is already banned', network=network)
-            return False
-        elif self.ban_overlaps(network):
-            log.info('IP/Network {network} overlaps another network', network=network)
-            return False
+            msg = 'IP/Network {network} is already banned'.format(network=network)
+            log.info()
+            return msg
+        overlap = self.ban_overlaps(network)
+        if overlap:
+            msg = 'IP/Network {network} overlaps with network {overlap}'.format(
+                network=network, overlap=overlap)
+            log.info(msg)
+            return msg
         kicked_name = self.kick_network(network)
         if kicked_name:
             name = kicked_name
@@ -204,7 +211,7 @@ class DefaultBanManager(BaseBanManager):
             duration = None
         self.database[network] = (name or '(unknown)', reason, duration)
         self.save_bans()
-        return True
+        return None
 
     def remove_ban(self, network) -> int:
         network = ip_network(str(network), strict=False)
