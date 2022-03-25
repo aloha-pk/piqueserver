@@ -55,16 +55,15 @@ class FeatureConnection(ServerConnection):
             self.protocol.command_limit_size, self.protocol.command_limit_time)
 
     def on_connect(self) -> None:
-        protocol = self.protocol
         client_ip = self.address[0]
 
-        banned = self.protocol.ban_manager.get_ban(client_ip)
+        ban_manager = self.protocol.ban_manager
+        banned = ban_manager.get_ban(client_ip)
         if banned:
             name, reason, timestamp = banned[1:]
 
             if timestamp is not None and reactor.seconds() >= timestamp:
-                protocol.remove_ban(client_ip)
-                protocol.save_bans()
+                ban_manager.remove_ban(client_ip)
             else:
                 log.info('banned user {} ({}) attempted to join'
                          .format(name, client_ip))
