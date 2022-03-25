@@ -949,6 +949,7 @@ class ServerConnection(BaseConnection):
             old_team = self.team
             self.team = None
             self.on_team_changed(old_team)
+        self.reset_score()
         self.on_reset()
         self.name = self.hp = self.world_object = None
 
@@ -1039,6 +1040,9 @@ class ServerConnection(BaseConnection):
 
     def add_score(self, score):
         self.kills += score
+
+    def reset_score(self):
+        self.kills = 0
 
     def _connection_ack(self) -> None:
         self._send_connection_data()
