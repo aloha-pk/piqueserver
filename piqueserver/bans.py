@@ -106,6 +106,13 @@ class BaseBanManager(abc.ABC):
                 return
             self.banpublish_update_callback()
 
+    def ban_reason_format(self, admin, name, reason, duration) -> Optional[str]:
+        """
+        Returns custom formatting for the ban reason, or None.
+        Stuff extra info in there if you like!
+        """
+        return reason
+
 
 class DefaultBanManager(BaseBanManager):
     """
