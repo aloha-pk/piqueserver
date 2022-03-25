@@ -18,6 +18,9 @@ from piqueserver.config import config
 Ban = Tuple[IPv4Network, str, str, Optional[int]]
 
 
+log = Logger()
+
+
 # i would REALLY like to make this async, but i'm not totally sure that's feasible atm - muffin
 class BaseBanManager(abc.ABC):
     """
@@ -98,10 +101,10 @@ class BaseBanManager(abc.ABC):
         """
 
         if self.banpublish_update_callback is not None:
+            if not callable(self.banpublish_update_callback):
+                log.error(f"BanPublish callback is set incorrectly: expected callable, got {type(self.banpublish_update_callback)}")
+                return
             self.banpublish_update_callback()
-
-
-log = Logger()
 
 
 class DefaultBanManager(BaseBanManager):
