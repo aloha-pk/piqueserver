@@ -65,6 +65,7 @@ def ban(connection, value, *arg):
     """
     duration, reason = get_ban_arguments(connection, arg)
     player = get_player(connection.protocol, value)
+    reason = connection.protocol.ban_manager.ban_reason_format(connection, player.name, reason, duration)
     player.ban(reason, duration)
 
 
@@ -77,6 +78,7 @@ def hban(connection, value, *arg):
     duration = timeparse("1hour")
     reason = join_arguments(arg)
     player = get_player(connection.protocol, value)
+    reason = connection.protocol.ban_manager.ban_reason_format(connection, player.name, reason, duration)
     player.ban(reason, duration)
 
 
@@ -89,6 +91,7 @@ def dban(connection, value, *arg):
     duration = timeparse("1day")
     reason = join_arguments(arg)
     player = get_player(connection.protocol, value)
+    reason = connection.protocol.ban_manager.ban_reason_format(connection, player.name, reason, duration)
     player.ban(reason, duration)
 
 
@@ -101,6 +104,7 @@ def wban(connection, value, *arg):
     duration = timeparse("1week")
     reason = join_arguments(arg)
     player = get_player(connection.protocol, value)
+    reason = connection.protocol.ban_manager.ban_reason_format(connection, player.name, reason, duration)
     player.ban(reason, duration)
 
 
@@ -113,6 +117,7 @@ def pban(connection, value, *arg):
     duration = 0
     reason = join_arguments(arg)
     player = get_player(connection.protocol, value)
+    reason = connection.protocol.ban_manager.ban_reason_format(connection, player.name, reason, duration)
     player.ban(reason, duration)
 
 
@@ -122,9 +127,11 @@ def banip(connection, ip, *arg):
     Ban an IP address or network
     /banip <ip/network> [duration] [reason]
     """
+    ban_manager = connection.protocol.ban_manager
     duration, reason = get_ban_arguments(connection, arg)
+    reason = ban_manager.ban_reason_format(connection, None, reason, duration)
     try:
-        error_message = connection.protocol.ban_manager.add_ban(ip, None, reason, duration)
+        error_message = ban_manager.add_ban(ip, None, reason, duration)
         if error_message:
             return error_message
     except ValueError:
