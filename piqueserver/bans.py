@@ -197,7 +197,7 @@ class DefaultBanManager(BaseBanManager):
             name = name or kicked_name
         if self.get_ban(network):
             msg = 'IP/Network {network} is already banned'.format(network=network)
-            log.info()
+            log.info(msg)
             return msg
         overlap = self.ban_overlaps(network)
         if overlap:
