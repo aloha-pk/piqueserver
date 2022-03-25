@@ -890,10 +890,6 @@ class ServerConnection(BaseConnection):
         if not spectator:
             self.on_spawn((x, y, z))
 
-        if not self.client_info:
-            handshake_init = loaders.HandShakeInit()
-            self.send_contained(handshake_init)
-
     def take_flag(self):
         if not self.hp:
             return
@@ -1082,9 +1078,6 @@ class ServerConnection(BaseConnection):
     def _connection_ack(self) -> None:
         self._send_connection_data()
         self.send_map(ProgressiveMapGenerator(self.protocol.map))
-        if not self.client_info:
-            handshake_init = loaders.HandShakeInit()
-            self.send_contained(handshake_init)
 
     def _send_connection_data(self) -> None:
         saved_loaders = self.saved_loaders = []
@@ -1247,6 +1240,9 @@ class ServerConnection(BaseConnection):
                 self.peer.send(0, packet)
             self.saved_loaders = None
             self.on_join()
+            if not self.client_info:
+                handshake_init = loaders.HandShakeInit()
+                self.send_contained(handshake_init)
             return
         for _ in range(10):
             if not self.map_data.data_left():
