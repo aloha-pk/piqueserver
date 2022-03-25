@@ -5,7 +5,6 @@ import os
 import json
 import time
 from ipaddress import IPv4Network, ip_address, ip_network
-from unittest import result
 from twisted.logger import Logger
 from twisted.internet import reactor
 from twisted.internet.task import LoopingCall, coiterate
