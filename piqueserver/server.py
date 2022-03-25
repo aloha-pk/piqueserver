@@ -346,6 +346,7 @@ class FeatureProtocol(ServerProtocol):
         if ban_publish.get():
             from piqueserver.banpublish import PublishServer
             self.ban_publish = PublishServer(self, ban_publish_port.get())
+            self.ban_manager.banpublish_update_callback = self.ban_publish.update
         if bans_config_urls.get():
             from piqueserver import bansubscribe
             self.bansubscribe_manager = bansubscribe.BanSubscribeManager(self)
