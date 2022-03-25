@@ -337,7 +337,7 @@ class ServerProtocol(BaseProtocol):
             if player.team is not None:
                 player.spawn()
 
-    def get_name(self, name):
+    def get_name(self, player, name):
         '''
         Sanitizes `name` and modifies it so that it doesn't
         collide with other names connected to the server.
@@ -348,7 +348,7 @@ class ServerProtocol(BaseProtocol):
         name = name.replace('#', '')
         name = name.replace('%', '')
         if not name:
-            name = 'Deuce'
+            name = 'Deuce' + str(player.player_id)
         new_name = name
         names = [p.name.lower() for p in self.players.values()]
         i = 0

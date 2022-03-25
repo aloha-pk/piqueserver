@@ -170,7 +170,7 @@ class ServerConnection(BaseConnection):
         self.team = team
         if self.name is None:
             name = contained.name
-            self.name = self.protocol.get_name(name)
+            self.name = self.protocol.get_name(self, name)
             self.protocol.players[self.player_id] = self
             self.on_login(self.name)
         else:
