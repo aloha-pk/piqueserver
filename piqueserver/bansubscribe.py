@@ -47,7 +47,7 @@ bans_config_interval = bans_config.option('bansubscribe_interval', default="5min
                                           cast=cast_duration)
 
 
-class BanManager:
+class BanSubscribeManager:
     bans = None
 
     def __init__(self, protocol):

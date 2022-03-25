@@ -205,7 +205,7 @@ class FeatureProtocol(ServerProtocol):
     connection_class = FeatureConnection
     bans = None
     ban_publish = None
-    ban_manager = None
+    bansubscribe_manager = None
     auth_backend = None
     everyone_is_admin = False
     player_memory = None
@@ -356,7 +356,7 @@ class FeatureProtocol(ServerProtocol):
             self.ban_publish = PublishServer(self, ban_publish_port.get())
         if bans_config_urls.get():
             from piqueserver import bansubscribe
-            self.ban_manager = bansubscribe.BanManager(self)
+            self.bansubscribe_manager = bansubscribe.BanSubscribeManager(self)
         self.start_time = time.time()
         self.end_calls = []
         # TODO: why is this here?
