@@ -1,6 +1,7 @@
 import abc
 from typing import Tuple, List, Any
 from pyspades.types import AttributeSet
+
 import piqueserver
 from piqueserver.config import config
 
