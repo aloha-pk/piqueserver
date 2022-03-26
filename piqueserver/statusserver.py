@@ -15,14 +15,12 @@
 # You should have received a copy of the GNU General Public License
 # along with pyspades.  If not, see <http://www.gnu.org/licenses/>.
 
-import asyncio
+import abc
+
 from twisted.internet.defer import Deferred
-import aiohttp
 from aiohttp import web
-from multidict import MultiDict
 
 from jinja2 import Environment, PackageLoader
-import json
 import time
 from PIL import Image
 from io import BytesIO
@@ -31,6 +29,23 @@ from twisted.logger import Logger
 from piqueserver.utils import as_deferred
 
 from piqueserver.config import config, cast_duration
+
+
+class BaseStatusServer(abc.ABC):
+    """
+    Status server interface
+    """
+
+    def __init__(self, protocol):
+        self.protocol = protocol
+
+    @abc.abstractmethod
+    async def listen(self):
+        """
+        Starts the status server
+        """
+        pass
+
 
 status_server_config = config.section("status_server")
 host_option = status_server_config.option("host", "0.0.0.0")
@@ -97,7 +112,7 @@ def current_state(protocol):
     return dictionary
 
 
-class StatusServer:
+class DefaultStatusServer(BaseStatusServer):
     def __init__(self, protocol):
         self.protocol = protocol
         self.last_update = None
