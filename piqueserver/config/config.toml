@@ -66,6 +66,8 @@ network_interface = ""
 # https://api.ipify.org
 #ip_getter = "https://services.buildandshoot.com/getip"
 
+# backend to use for authentication via /login, /logout 
+# default backend uses this config file, see sections [passwords], [rights]
 #auth_backend = "piqueserver.auth.DefaultAuthBackend"
 
 # note: scripts are loaded in order entered here. Some scripts may depend on
@@ -192,7 +194,7 @@ name = "Green"
 color = [ 0, 255, 0]
 
 [passwords]
-# server management passwords
+# server management passwords, used by default auth backend
 # players can login using these to execute privileged commands (kicking,
 # changing maps, etc.)
 # authenticate with: /login <password>
@@ -211,6 +213,7 @@ color = [ 0, 255, 0]
 # default duration a banned player will be banned for
 default_duration = "1day"
 
+# backend to use for player bans
 #backend = "piqueserver.bans.DefaultBanManager"
 
 # if using the default backend, location the bans are saved and loaded from (relative to the config
@@ -234,6 +237,7 @@ default_duration = "1day"
 
 [rights]
 # Rights allow you to specify the roles available and what permissions they have
+# used by the default auth backend
 moderator = [
  "advancemap", "cancel", "dban", "fog",
  "from", "hackinfo", "hban",
