@@ -271,6 +271,7 @@ profile = false
 # game (including map, players, and server information)
 [status_server]
 enabled = true
+#backend = "piqueserver.statusserver.DefaultStatusServer"
 port = 32886
 logging = true
 

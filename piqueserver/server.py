@@ -84,6 +84,7 @@ def sleep(secs):
 # declare configuration options
 bans_config = config.section('bans')
 logging_config = config.section('logging')
+status_server_config = config.section('status_server')
 team1_config = config.section('team1')
 team2_config = config.section('team2')
 
@@ -144,8 +145,8 @@ logging_profile_option = logging_config.option('profile', False)
 set_god_build = config.option('set_god_build', False)
 ssh_enabled = config.section('ssh').option('enabled', False)
 irc_options = config.option('irc', {})
-status_server_enabled = config.section(
-    'status_server').option('enabled', False)
+status_server_enabled = status_server_config.option('enabled', False)
+status_server_backend = status_server_config.option('backend', 'piqueserver.statusserver.DefaultStatusServer')
 ban_publish = bans_config.option('publish', False)
 ban_publish_port = bans_config.option('publish_port', 32885)
 logging_rotate_daily = logging_config.option('rotate_daily', False)
@@ -340,8 +341,8 @@ class FeatureProtocol(ServerProtocol):
             from piqueserver.irc import IRCRelay
             self.irc_relay = IRCRelay(self, irc)
         if status_server_enabled.get():
-            from piqueserver.statusserver import StatusServer
-            self.status_server = StatusServer(self)
+            s_backend_class = extensions.load_backend(status_server_backend.get(), 'web/')
+            self.status_server = s_backend_class(self)
             ensureDeferred(self.status_server.listen())
         if ban_publish.get():
             from piqueserver.banpublish import PublishServer
