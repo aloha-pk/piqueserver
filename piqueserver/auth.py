@@ -107,7 +107,7 @@ def notify_logout(connection) -> None:
     connection.login_info = None
 
 
-class ConfigAuthBackend(BaseAuthBackend):
+class DefaultAuthBackend(BaseAuthBackend):
     """
     Auth backend that uses the [passwords] section of the config for authentication
     """
