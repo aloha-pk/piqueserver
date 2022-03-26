@@ -66,7 +66,7 @@ network_interface = ""
 # https://api.ipify.org
 #ip_getter = "https://services.buildandshoot.com/getip"
 
-auth_backend = "piqueserver.auth.ConfigAuthBackend"
+#auth_backend = "piqueserver.auth.DefaultAuthBackend"
 
 # note: scripts are loaded in order entered here. Some scripts may depend on
 # other scripts being loaded before them.
