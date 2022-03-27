@@ -26,7 +26,7 @@ import traceback
 from pyspades.protocol import BaseProtocol
 from pyspades.constants import (
     CTF_MODE, TC_MODE, GAME_VERSION, MIN_TERRITORY_COUNT, MAX_TERRITORY_COUNT,
-    UPDATE_FREQUENCY, UPDATE_FPS, NETWORK_FPS)
+    UPDATE_FREQUENCY, UPDATE_FPS, DEFAULT_NETWORK_FPS)
 from pyspades.types import ProtocolIDPool
 from pyspades.master import get_master_connection
 from pyspades.team import Team
@@ -51,6 +51,7 @@ class ServerProtocol(BaseProtocol):
     max_players = 32
     connections = None
     player_ids = None
+    network_fps = DEFAULT_NETWORK_FPS
     master = False
     max_score = 10
     map = None
@@ -247,7 +248,7 @@ class ServerProtocol(BaseProtocol):
                     traceback.print_exc()
                 self.world_time += UPDATE_FREQUENCY
             # Update network
-            if time.monotonic() - self.last_network_update >= 1 / NETWORK_FPS:
+            if time.monotonic() - self.last_network_update >= 1 / self.network_fps:
                 self.last_network_update = self.world_time
                 self.update_network()
 
