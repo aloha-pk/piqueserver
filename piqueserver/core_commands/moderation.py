@@ -2,7 +2,7 @@ from random import choice
 from twisted.internet import reactor
 # aparently, we need to send packets in this file. For now, I give in.
 from pyspades.contained import CreatePlayer, SetTool, KillAction, InputData, SetColor, WeaponInput
-from pyspades.constants import (GRENADE_KILL, FALL_KILL, NETWORK_FPS)
+from pyspades.constants import (GRENADE_KILL, FALL_KILL)
 from pyspades.common import (
     prettify_timespan,
     make_color)
@@ -264,7 +264,7 @@ def invisible(connection, player):
         kill_action = KillAction()
         kill_action.kill_type = choice([GRENADE_KILL, FALL_KILL])
         kill_action.player_id = kill_action.killer_id = player.player_id
-        reactor.callLater(1.0 / NETWORK_FPS, protocol.broadcast_contained,
+        reactor.callLater(1.0 / protocol.network_fps, protocol.broadcast_contained,
                           kill_action, sender=player)
     else:
         player.send_chat("You return to visibility")
