@@ -67,7 +67,7 @@ def load_backend(backend_name, backend_dir):
             "backend '{}' not found in either {} directory or global scope".format(
                 backend_name, backend_dir))
         return
-    spec.name = 'piqueserver._backend_namespace.{}'.format(backend[0])
+    spec.name = f'{backend[0]}_pique_backend'
     spec.loader.name = spec.name
     # load module, extract class
     try:
@@ -110,7 +110,7 @@ def load_scripts(script_names, script_dir, script_type):
             continue
         # namespace module name to avoid shadowing global modules
         # TODO: figure out if there are any right or better ways.
-        spec.name = 'piqueserver._{}_namespace.{}'.format(script_type, script)
+        spec.name = f'{script}_pique_{script_type}'
         spec.loader.name = spec.name
         # load module
         try:
