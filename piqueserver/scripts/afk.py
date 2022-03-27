@@ -101,12 +101,12 @@ def apply_script(protocol, connection, config):
             self.afk_kick_call = None
             connection.on_disconnect(self)
 
-        def on_user_login(self, user_type, verbose=True):
-            if user_type in ('admin', 'trusted'):
+        def on_user_login(self, user_types, verbose=True):
+            if any(user_type in ('admin', 'trusted') for user_type in user_types):
                 if self.afk_kick_call and self.afk_kick_call.active():
                     self.afk_kick_call.cancel()
                 self.afk_kick_call = None
-            return connection.on_user_login(self, user_type, verbose)
+            return connection.on_user_login(self, user_types, verbose)
 
         def on_connect(self):
             if not self.local:

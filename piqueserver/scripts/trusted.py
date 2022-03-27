@@ -21,7 +21,7 @@ S_RESULT_TRUSTED = 'Trusted user'
 @command(admin_only=True)
 def trust(connection, player):
     player = get_player(connection.protocol, player)
-    player.on_user_login('trusted', False)
+    player.on_user_login(['trusted'], False)
     auth = connection.protocol.auth_backend
     auth.set_user_type(player, 'trusted')
     player.send_chat(S_GRANTED_SELF)
@@ -31,14 +31,14 @@ def trust(connection, player):
 def apply_script(protocol, connection, config):
     class TrustedConnection(connection):
 
-        def on_user_login(self, user_type, verbose=True):
-            if user_type == 'trusted':
+        def on_user_login(self, user_types, verbose=True):
+            if 'trusted' in user_types:
                 self.speedhack_detect = False
                 votekick = getattr(self.protocol, 'votekick', None)
                 if votekick and votekick.victim is self:
                     votekick.end(S_RESULT_TRUSTED)
                     self.protocol.votekick = None
-            return connection.on_user_login(self, user_type, verbose)
+            return connection.on_user_login(self, user_types, verbose)
 
     class TrustedProtocol(protocol):
 

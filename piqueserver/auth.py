@@ -92,16 +92,14 @@ class BaseAuthBackend(abc.ABC):
 
 def notify_login(connection) -> None:
     auth = connection.protocol.auth_backend
-    for user_type in connection.login_info[0]:
-        connection.on_user_login(user_type, True)
+    connection.on_user_login(connection.login_info[0], True)
     user_info = auth.get_user_info(connection)
     message = '{} logged in as {}'
     connection.send_chat(message.format('You', user_info))
     connection.protocol.irc_say('* ' + message.format(connection.name, user_info))
 
 def notify_logout(connection) -> None:
-    for user_type in connection.login_info[0]:
-        connection.on_user_logout(user_type)
+    connection.on_user_logout(connection.login_info[0])
     connection.send_chat('Logout successful')
     connection.protocol.irc_say('* {} logged out'.format(connection.name))
     connection.login_info = None

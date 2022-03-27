@@ -95,7 +95,7 @@ class FeatureConnection(ServerConnection):
             self.user_types = AttributeSet()
             self.rights = AttributeSet()
             if self.protocol.everyone_is_admin:
-                self.on_user_login('admin', False)
+                self.on_user_login(['admin'], False)
 
     def get_spawn_location(self) -> Tuple[int, int, int]:
         get_location = self.protocol.map_info.get_spawn_location
@@ -353,11 +353,10 @@ class FeatureConnection(ServerConnection):
                                                             reason))
         self.kick(reason)
 
-    def on_user_login(self, user_type, verbose=True):
-        log.info("'{username}' logged in as {user_type}", username=self.name,
-                 user_type=user_type)
+    def on_user_login(self, user_types, verbose=True):
+        log.info(f"'{self.name}' logged in as { ', '.join(user_types) }")
 
-    def on_user_logout(self, user_type):
+    def on_user_logout(self, user_types):
         pass
 
     def timed_out(self):
