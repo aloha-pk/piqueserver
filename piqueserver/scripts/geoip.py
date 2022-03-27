@@ -31,8 +31,7 @@ except (IOError, OSError):
     print(
         "('/from' command disabled due to missing GeoIP database. Run 'piqueserver --update-geoip' to install.)"
     )
-finally:
-
+else:
     @command('from', admin_only=True)
     @target_player
     def where_from(connection, player):
