@@ -11,7 +11,7 @@ packaging>=19.0
 geoip2>=2.9,<5.0
 
 # [tls] for core, [conch] for ssh
-Twisted[tls,conch]
+Twisted[tls,conch]==21.7.0
 
 # windows specific
 pypiwin32; platform_system=="Windows"
