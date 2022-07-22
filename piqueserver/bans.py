@@ -8,6 +8,7 @@ from ipaddress import IPv4Network, ip_address, ip_network
 from twisted.logger import Logger
 from twisted.internet import reactor
 from twisted.internet.task import LoopingCall, coiterate
+from pyspades.common import prettify_timespan
 from piqueserver.utils import ensure_dir_exists
 from piqueserver.networkdict import NetworkDict
 from piqueserver.config import config
@@ -111,6 +112,21 @@ class BaseBanManager(abc.ABC):
         Stuff extra info in there if you like!
         """
         return reason
+
+    def announce_ban(self, address, name, reason, duration):
+        """
+        Announces the ban to players ingame and/or in IRC
+        """
+        
+        reason = ': ' + reason if reason is not None else ''
+        duration = duration or None
+        if duration is None:
+            message = '{} permabanned{}'.format(name, reason)
+        else:
+            message = '{} banned for {}{}'.format(name,
+                                                  prettify_timespan(duration), reason)
+                                                  
+        self.protocol.broadcast_chat(message, irc=True)
 
 
 class DefaultBanManager(BaseBanManager):

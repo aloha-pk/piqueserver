@@ -328,13 +328,8 @@ class FeatureConnection(ServerConnection):
     def ban(self, reason=None, duration=None):
         reason = ': ' + reason if reason is not None else ''
         duration = duration or None
-        if duration is None:
-            message = '{} permabanned{}'.format(self.name, reason)
-        else:
-            message = '{} banned for {}{}'.format(self.name,
-                                                  prettify_timespan(duration), reason)
         if self.protocol.on_ban_attempt(self, reason, duration):
-            self.protocol.broadcast_chat(message, irc=True)
+            self.protocol.ban_manager.announce_ban(self.address, self.name, reason, duration)
             self.protocol.on_ban(self, reason, duration)
             if self.address[0] == "127.0.0.1":
                 self.protocol.broadcast_chat("Ban ignored: localhost")
