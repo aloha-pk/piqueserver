@@ -316,9 +316,9 @@ def apply_script(protocol, connection, config):
 
         def on_ban(self, banee, reason, duration):
             votekick = self.votekick
-            if votekick and votekick.victim is self:
+            if votekick and votekick.victim is banee:
                 votekick.end(S_RESULT_BANNED)
-            protocol.on_ban(self, connection, reason, duration)
+            protocol.on_ban(self, banee, reason, duration)
 
         def on_votekick_start(self, instigator, victim, reason):
             pass
@@ -355,7 +355,7 @@ def apply_script(protocol, connection, config):
             votekick = self.protocol.votekick
             if votekick:
                 if votekick.victim is self:
-                    votekick.end(S_RESULT_KICKED)
+                    pass # votekick.end(S_RESULT_KICKED)
                 elif votekick.instigator is self:
                     votekick.end(S_RESULT_INSTIGATOR_KICKED)
             connection.kick(self, reason, silent)
