@@ -12,6 +12,7 @@ Commands
 .. codeauthor:: TheGrandmaster & mat^2
 """
 
+from twisted.internet.reactor import seconds
 from piqueserver.commands import command, get_player
 from pyspades.constants import *
 
@@ -21,6 +22,9 @@ HEADSHOT_RATIO = False
 
 # List other types of kills as well
 EXTENDED_RATIO = False
+
+# Add rate of kills
+KILLS_PER_MINUTE = True
 
 # "ratio" must be AFTER "votekick" in the config.txt script list
 RATIO_ON_VOTEKICK = True
@@ -52,6 +56,9 @@ def ratio(connection, user=None):
     if EXTENDED_RATIO:
         msg += ", %s headshot, %s melee, %s grenade" % (
             headshotkills, meleekills, grenadekills)
+    if KILLS_PER_MINUTE:
+        dt = (seconds() - connection.time_login) / 60.0
+        msg += ", %.2f kills per minute" % (kills / dt)
     msg += ")."
     return msg
 
@@ -63,6 +70,7 @@ def apply_script(protocol, connection, config):
         ratio_meleekills = 0
         ratio_grenadekills = 0
         ratio_deaths = 0
+        time_login = 0
 
         def on_kill(self, killer, type, grenade):
             if killer is not None and self.team is not killer.team:
@@ -74,6 +82,11 @@ def apply_script(protocol, connection, config):
 
             self.ratio_deaths += 1
             return connection.on_kill(self, killer, type, grenade)
+
+        def on_login(self, name):
+            if self.time_login == 0:
+                self.time_login = seconds()
+            return connection.on_login(self, name)
 
     class RatioProtocol(protocol):
 
