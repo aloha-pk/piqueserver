@@ -28,8 +28,10 @@ def analyze_shot(connection, player=None):
         if connection.name in protocol.analyzers:
             del protocol.analyzers[connection.name]
             return 'You are no longer analyzing anyone.'
-
-        return 'Please enter a target player to analyze.'
+            
+        protocol.analyzers[connection.name] = connection.name
+        connection.hs, connection.bs, connection.ls = 0, 0, 0
+        return 'You are now analyzing yourself.'
 
     player = get_player(protocol, player)
     if player.player_id not in protocol.players:
