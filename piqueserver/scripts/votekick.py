@@ -47,7 +47,8 @@ S_IN_PROGRESS = 'Votekick already in progress'
 S_SELF_VOTEKICK = "You can't votekick yourself"
 S_NOT_ENOUGH_PLAYERS = "There aren't enough players to vote"
 S_VOTEKICK_IMMUNE = "You can't votekick this player"
-S_NOT_YET = "You can't start another votekick yet!"
+S_NOT_YET = "You can't start a votekick yet!"
+S_NOT_YET_ANOTHER = "You can't start another votekick yet!"
 S_NEED_REASON = 'You must provide a reason for the votekick'
 S_CANT_CANCEL = "You didn't start the votekick!"
 S_YES = '{player} voted YES'
@@ -170,6 +171,7 @@ def togglevotekick(connection, *args):
 class Votekick:
     timeout = 120.0  # 2 minutes
     interval = 120.0  # 2 minutes
+    join_delay = 15.0
     ban_duration = BAN_DURATION_OPTION.get()
     public_votes = PUBLIC_VOTES_OPTION.get()
     schedule = None
@@ -181,6 +183,7 @@ class Votekick:
     @classmethod
     def start(cls, instigator, victim, reason=None):
         protocol = instigator.protocol
+        join_time = instigator.vk_join_time
         last_votekick = instigator.last_votekick
         reason = reason.strip() if reason else None
         if protocol.votekick:
@@ -191,9 +194,12 @@ class Votekick:
             raise VotekickFailure(S_NOT_ENOUGH_PLAYERS)
         elif victim.admin or victim.rights.cancel or victim.local:
             raise VotekickFailure(S_VOTEKICK_IMMUNE)
-        elif not instigator.admin and (last_votekick is not None and
-                                       seconds() - last_votekick < cls.interval):
+        elif not instigator.admin and (join_time is not None and
+            seconds() - join_time < cls.join_delay):
             raise VotekickFailure(S_NOT_YET)
+        elif not instigator.admin and (last_votekick is not None and
+            seconds() - last_votekick < cls.interval):
+            raise VotekickFailure(S_NOT_YET_ANOTHER)
         elif REQUIRE_REASON and not reason:
             raise VotekickFailure(S_NEED_REASON)
 
@@ -313,6 +319,11 @@ def apply_script(protocol, connection, config):
     class VotekickConnection(connection):
         last_votekick = None
         votekick_enabled = True
+        vk_join_time = None
+
+        def on_login(self, name):
+            self.vk_join_time = seconds()
+            connection.on_login(self, name)
 
         def on_disconnect(self):
             votekick = self.protocol.votekick
