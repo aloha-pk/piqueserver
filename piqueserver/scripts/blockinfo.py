@@ -153,8 +153,8 @@ def apply_script(protocol, connection, config):
         block_info = None
 
         def on_map_change(self, map):
-            # initialize with unused value to allow list to be used immediately, rather when first block is placed
-            self.block_info = {(-1,-1,-1)}
+            # initialize with unused key, value to allow dict to be used immediately, rather when first block is placed
+            self.block_info = {(-1,-1,-1): None}
             protocol.on_map_change(self, map)
 
         def on_votekick_start(self, instigator, victim, reason):
