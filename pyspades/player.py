@@ -711,22 +711,25 @@ class ServerConnection(BaseConnection):
     def on_version_info_recieved(self, contained: loaders.VersionResponse) -> None:
         self.client_info["version"] = contained.version
         self.client_info["os_info"] = contained.os_info[:108]
-        # TODO: Make this a dict lookup instead
-        if contained.client == 'o':
-            self.client_info["client"] = "OpenSpades"
-        elif contained.client == 'B':
-            self.client_info["client"] = "BetterSpades"
+        client_names = {
+            ord('a') : "Ace of Spades",
+            ord('o') : "OpenSpades",
+            ord('B') : "BetterSpades",
+            ord('V') : "Voxenium",
+        }
+
+        if client_names[ord(contained.client)]:
+             self.client_info["client"] = client_names[ord(contained.client)]
+        else:
+            self.client_info["client"] = "Unknown({})".format(contained.client)
+
+        if self.client_info["client"] == "BetterSpades":
             # BetterSpades currently sends the client name in the OS info to
             # deal with old scripts that don't recognize the 'B' indentifier
             match = re.match(r"\ABetterSpades \((.*)\)\Z",
                              contained.os_info[:108])
             if match:
                 self.client_info["os_info"] = match.groups()[0]
-        elif contained.client == 'a':
-            self.client_info["client"] = "ACE"
-        else:
-            self.client_info["client"] = "Unknown({})".format(contained.client)
-
         # send extension info to clients that support this packet.
         # skip openspades <= 0.1.3 https://github.com/piqueserver/piqueserver/issues/504
         if contained.client == 'o' and contained.version <= (0, 1, 3):
@@ -735,6 +738,10 @@ class ServerConnection(BaseConnection):
             ext_info = loaders.ProtocolExtensionInfo()
             ext_info.extensions = []
             self.send_contained(ext_info)
+        try:
+            self.enforce_client()
+        except:
+            log.debug("enforceclient.py not included in server config")
 
     @property
     def client_string(self):
