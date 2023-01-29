@@ -53,7 +53,7 @@ from piqueserver.commands import command, admin
 ALWAYS_ENABLED = True
 
 # How long should be spent between rounds in arena (seconds)
-SPAWN_ZONE_TIME = 15.0
+SPAWN_ZONE_TIME = 13.0
 
 # How many seconds a team color should be shown after they win a round
 # Set to 0 to disable this feature.
@@ -63,7 +63,7 @@ TEAM_COLOR_TIME = 4.0
 # disable the time limit
 MAX_ROUND_TIME = 180
 
-MAP_CHANGE_DELAY = 25.0
+MAP_CHANGE_DELAY = 35.0
 
 # Coordinates to hide the tent and the intel
 HIDE_COORD = (0, 0, 63)
@@ -86,6 +86,10 @@ def coord(connection):
     connection.get_coord = True
     return 'Spade a block to get its coordinate.'
 
+@command(admin_only=True)
+def forcestart(connection):
+    connection.protocol.begin_arena()
+    return 'Countdown forced'
 
 def make_color(r, g, b, a=255):
     r = int(r)
@@ -100,8 +104,6 @@ def make_color(r, g, b, a=255):
 # d = changing indice
 # c1 = first constant indice
 # c2 = second constant indice
-
-
 def partition(points, d, c1, c2):
     row = {}
     row_list = []
@@ -481,7 +483,7 @@ def apply_script(protocol, connection, config):
                 self.old_respawn_time = None
                 self.old_building = None
                 self.old_killing = None
-            return protocol.on_map_change(self, map)
+            return protocol.on_map_change(self, map_)
 
         def build_gates(self):
             for gate in self.gates:
