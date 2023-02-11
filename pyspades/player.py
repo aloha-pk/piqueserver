@@ -420,7 +420,7 @@ class ServerConnection(BaseConnection):
         self.grenades -= 1
         if not self.check_speedhack(*contained.position):
             contained.position = self.world_object.position.get()
-        if contained.value > 3.0:
+        if contained.value > 3.0: # fuse cannot be greater than 3.0s
             contained.value = 3.0
         velocity = Vertex3(*contained.velocity) - self.world_object.velocity
         if velocity.length() > 2.0:  # cap at tested maximum
