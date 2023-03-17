@@ -269,7 +269,7 @@ def send_normal_kill_count(self) -> None:
     existing_player.kills = self.kills
     existing_player.color = make_color(*self.color)
     existing_player.name = self.name
-    reactor.callLater(0.01, self.protocol.broadcast_contained, existing_player)
+    self.protocol.broadcast_contained(existing_player)
 
 
 def apply_script(protocol, connection, config):
