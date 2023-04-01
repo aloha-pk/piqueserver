@@ -295,8 +295,6 @@ def apply_script(protocol, connection, config):
                 flag = other_team.set_flag()
                 flag.update()
 
-
-
         def on_block_destroy(self, x, y, z, mode):
             returned = connection.on_block_destroy(self, x, y, z, mode)
             if self.get_coord:
