@@ -42,11 +42,12 @@ there is one spawn location for blue and two spawn locations for green::
 
 import random
 import math
-from pyspades.contained import BlockAction, SetColor, BlockLine
+from pyspades.contained import BlockAction, SetColor, BlockLine, ExistingPlayer, IntelCapture
 from pyspades import world
 from pyspades.constants import DESTROY_BLOCK, TEAM_CHANGE_KILL, CTF_MODE
 from twisted.internet import reactor
 from piqueserver.commands import command, admin
+existing_player, intel_capture = ExistingPlayer(), IntelCapture()
 
 # If ALWAYS_ENABLED is False, then the 'arena' key must be set to True in
 # the 'extensions' dictionary in the map metadata
@@ -258,10 +259,43 @@ class Gate:
                 self.support_blocks.append(coordinate)
         return False
 
+def send_normal_kill_count(self) -> None:
+    if self.disconnected:
+        return
+    existing_player.player_id = self.player_id
+    existing_player.team = self.team.id
+    existing_player.weapon = self.weapon
+    existing_player.tool = self.tool or 0
+    existing_player.kills = self.kills
+    existing_player.color = make_color(*self.color)
+    existing_player.name = self.name
+    self.protocol.broadcast_contained(existing_player)
+
 
 def apply_script(protocol, connection, config):
     class ArenaConnection(connection):
         get_coord = False
+
+        def capture_flag(self):
+            other_team = self.team.other
+            flag = other_team.flag
+            player = flag.player
+            if player is not self:
+                return
+            #self.add_score(10)  # 10 points for intel #changed: remove 10 kill bonus for last person standing at server logic
+            self.team.score += 1
+            self.on_flag_capture()
+            reactor.callLater(0.01, send_normal_kill_count, self) #overwrite client side +10 kills on scoreboard
+            if (self.protocol.max_score not in (0, None) and
+                    self.team.score >= self.protocol.max_score):
+                self.protocol.reset_game(self)
+                self.protocol.on_game_end()
+            else:
+                intel_capture.player_id = self.player_id
+                intel_capture.winning = False
+                self.protocol.broadcast_contained(intel_capture, save=True)
+                flag = other_team.set_flag()
+                flag.update()
 
         def on_block_destroy(self, x, y, z, mode):
             returned = connection.on_block_destroy(self, x, y, z, mode)
