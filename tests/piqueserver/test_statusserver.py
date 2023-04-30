@@ -8,7 +8,7 @@ import piqueserver.statusserver
 class StatusSeverTest(AioHTTPTestCase):
     async def get_application(self):
         protocol = Mock()
-        status_server = piqueserver.statusserver.StatusServer(protocol)
+        status_server = piqueserver.statusserver.DefaultStatusServer(protocol)
         return status_server.create_app()
 
     @unittest_run_loop
