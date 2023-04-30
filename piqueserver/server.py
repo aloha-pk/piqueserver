@@ -349,6 +349,7 @@ class FeatureProtocol(ServerProtocol):
         if bans_config_urls.get():
             from piqueserver import bansubscribe
             self.bansubscribe_manager = bansubscribe.BanSubscribeManager(self)
+            ensureDeferred(as_deferred(self.bansubscribe_manager.start()))
         self.start_time = time.time()
         self.end_calls = []
         # TODO: why is this here?
