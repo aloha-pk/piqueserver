@@ -738,10 +738,7 @@ class ServerConnection(BaseConnection):
             ext_info = loaders.ProtocolExtensionInfo()
             ext_info.extensions = []
             self.send_contained(ext_info)
-        try:
-            self.enforce_client()
-        except:
-            log.debug("enforceclient.py not included in server config")
+        self.on_client_info()
 
     @property
     def client_string(self):
@@ -1441,6 +1438,9 @@ class ServerConnection(BaseConnection):
         pass
 
     def on_animation_update(self, jump, crouch, sneak, sprint):
+        pass
+
+    def on_client_info(self):
         pass
 
     def __repr__(self):
