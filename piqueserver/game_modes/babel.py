@@ -23,18 +23,22 @@ BABEL_CTF_MESSAGE = 'Take the intel to the enemy base to score.'
 
 def apply_script(protocol, connection, config):
 
-    class OneCTFConnection(connection):
+    class OneCTFConnection(connection):        
         def on_flag_take(self):
             if self.protocol.one_ctf or self.protocol.reverse_one_ctf:
                 flag = self.team.flag
-                if flag.player is None:
-                    flag.set(*HIDE_POS)
-                    flag.update()
-                    if self.protocol.reverse_one_ctf:
-                        self.send_chat(BABEL_CTF_MESSAGE)
-                else:
+                if flag.player is not None:
                     return False
-            return connection.on_flag_take(self)
+            value = connection.on_flag_take(self)
+            if value == False:
+                return value
+            if self.protocol.one_ctf or self.protocol.reverse_one_ctf:
+                flag = self.team.flag
+                flag.set(*HIDE_POS)
+                flag.update()
+                if self.protocol.reverse_one_ctf:
+                    self.send_chat(REVERSE_ONE_CTF_MESSAGE)
+            return value
 
         def on_flag_drop(self):
             if self.protocol.one_ctf or self.protocol.reverse_one_ctf:
