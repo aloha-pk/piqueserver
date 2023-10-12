@@ -153,7 +153,9 @@ class FeatureConnection(ServerConnection):
                 self.protocol.god_blocks = set()
             self.protocol.god_blocks.update(points)
         elif self.protocol.user_blocks is not None:
-            self.protocol.user_blocks.update(points)
+            for point in points:
+                if self.protocol.map.get_solid(point) is False:
+                    self.protocol.user_blocks.update(point)
 
     def on_block_build(self, x: int, y: int, z: int) -> None:
         if self.god:
