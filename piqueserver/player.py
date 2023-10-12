@@ -137,10 +137,22 @@ class FeatureConnection(ServerConnection):
         return True
 
     def on_block_build_attempt(self, x: int, y: int, z: int) -> bool:
-        return self._can_build()
+        can_build = self._can_build()
+
+        if can_build and self.protocol.user_blocks is not None:
+            if self.protocol.map.get_solid(x, y, z) is False:
+                self.protocol.user_blocks.update((x, y, z))
+
+        return can_build
 
     def on_line_build_attempt(self, points) -> bool:
-        return self._can_build()
+        can_build = self._can_build()
+        if can_build and self.protocol.user_blocks is not None:
+            for point in points:
+                if self.protocol.map.get_solid(*point) is False:
+                    self.protocol.user_blocks.update(point)
+
+        return can_build
 
     def on_line_build(self, points) -> None:
         if self.god:
@@ -149,8 +161,6 @@ class FeatureConnection(ServerConnection):
             if self.protocol.god_blocks is None:
                 self.protocol.god_blocks = set()
             self.protocol.god_blocks.update(points)
-        elif self.protocol.user_blocks is not None:
-            self.protocol.user_blocks.update(points)
 
     def on_block_build(self, x: int, y: int, z: int) -> None:
         if self.god:
