@@ -118,19 +118,28 @@ def apply_script(protocol, connection, config):
             self.teamkill_times = None
             connection.on_reset(self)
 
-        def on_block_build(self, x, y, z):
-            if self.protocol.block_info is None:
-                self.protocol.block_info = {}
-            self.protocol.block_info[(x, y, z)] = (self.name, self.team.id)
-            connection.on_block_build(self, x, y, z)
+        def on_block_build_attempt(self, x, y, z):
+            can_build = connection.on_block_build_attempt(self, x, y, z)
+            if can_build and self.protocol.map.get_solid(x, y, z) is False:
+                if self.protocol.block_info is None:
+                    self.protocol.block_info = {}
+                self.protocol.block_info[(x, y, z)] = (self.name, self.team.id)
 
-        def on_line_build(self, points):
-            if self.protocol.block_info is None:
-                self.protocol.block_info = {}
-            name_team = (self.name, self.team.id)
-            for point in points:
-                self.protocol.block_info[point] = name_team
-            connection.on_line_build(self, points)
+            return can_build
+
+        def on_line_build_attempt(self, points):
+            can_build = connection.on_line_build_attempt(self, points)
+
+            if can_build:
+                if self.protocol.block_info is None:
+                    self.protocol.block_info = {}
+
+                name_team = (self.name, self.team.id)
+                for point in points:
+                    if self.protocol.map.get_solid(*point) is False:
+                        self.protocol.block_info[point] = name_team
+
+            return can_build
 
         def on_block_removed(self, x, y, z):
             if self.protocol.block_info is None:
