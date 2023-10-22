@@ -385,9 +385,13 @@ class ServerConnection(BaseConnection):
             hit_amount = self.weapon_object.get_damage(
                 value, position1, position2)
         self.on_unvalidated_hit(hit_amount, player, kill_type, None)
+
+        debug_str = f"[on_hit_recieved] hit by {self.name} (#{self.player_id}) towards {player.name} (#{player.player_id}) rejected:"
         if not self.hp:
+            log.debug(f"{debug_str} player is dead")
             return
         if not is_melee and self.weapon_object.is_empty():
+            log.debug(f"{debug_str} magazine is empty")
             return
         valid_hit = world_object.validate_hit(player.world_object,
                                               value, HIT_TOLERANCE,
@@ -396,15 +400,18 @@ class ServerConnection(BaseConnection):
             return
         if is_melee and not vector_collision(position1, position2,
                                              MELEE_DISTANCE):
+            log.debug(f"{debug_str} melee collision exceeds {MELEE_DISTANCE}")
             return
         returned = self.on_hit(hit_amount, player, kill_type, None)
         if returned == False:
+            log.debug(f"{debug_str} script rejected hit")
             return
         elif returned is not None:
             hit_amount = returned
         # do this after so on_hit can still be used
         if kill_type == WEAPON_KILL or kill_type == HEADSHOT_KILL:
             if self.protocol.map.get_solid(*self.world_object.position.get()):
+                log.debug(f"{debug_str} player is inside solid block")
                 return
         player.hit(hit_amount, self, kill_type)
 
