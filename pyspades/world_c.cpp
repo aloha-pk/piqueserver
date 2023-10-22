@@ -112,11 +112,9 @@ int validate_hit(float shooter_x, float shooter_y, float shooter_z,
     float y = cy * r;
     r *= aim_tolerance;
     int ret = (x - r < 0 && x + r > 0 && y - r < 0 && y + r > 0);
-#if 0
     if (!ret) {
-        printf("hit test failed: %f %f %f\n", x, y, r);
+        printf("[world_c.cpp] hit test failed: %f %f %f\n", x, y, r);
     }
-#endif
     return ret;
 }
 
