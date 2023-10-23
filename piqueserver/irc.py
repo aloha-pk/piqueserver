@@ -293,7 +293,7 @@ def who(connection):
     formatted_names = []
     for k, g in groupby(sorted_players, attrgetter('team')):
         teams.append(k)
-        formatted_names.append(map(name_formatter, g))
+        formatted_names.append(list(map(name_formatter, g)))
     separator = '\x0f, ' if connection.colors else ', '
     if not SPLIT_WHO_IN_TEAMS or player_count < SPLIT_THRESHOLD:
         noun = 'player' if player_count == 1 else 'players'
