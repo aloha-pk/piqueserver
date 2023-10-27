@@ -1063,7 +1063,7 @@ class ServerConnection(BaseConnection):
         else:
             log.debug("sending cached map")
             data = map_cache.get_map(map_hash)
-        self.send_map(ProgressiveMapGenerator(self.protocol.map))
+        self.send_map(data)
         log.debug("Map handling: " + str(round((monotonic()-starttime)*1000)) + "ms")
 
     def _send_connection_data(self) -> None:

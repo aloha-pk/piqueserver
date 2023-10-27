@@ -299,7 +299,6 @@ class ServerProtocol(BaseProtocol):
             map_hash = self.get_map_hash(map_obj)
             data = ProgressiveMapGenerator(self.map, parent=True)
             map_cache.add_map(map_hash, data)
-            data = map_cache.get_map(map_hash)
             for connection in list(self.connections.values()):
                 if connection.player_id is None:
                     continue
@@ -309,6 +308,10 @@ class ServerProtocol(BaseProtocol):
                 connection.reset()
                 connection._send_connection_data()
                 connection.send_map(data.get_child())
+        else:
+            map_hash = self.get_map_hash(map_obj)
+            data = ProgressiveMapGenerator(self.map, parent=True)
+            map_cache.add_map(map_hash, data)
         self.update_entities()
 
     def reset_game(self, player=None, territory=None):
