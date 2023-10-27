@@ -37,7 +37,7 @@ from pyspades import world
 from pyspades.bytes import ByteWriter
 from pyspades import contained as loaders
 from pyspades.common import make_color
-from pyspades.mapgenerator import ProgressiveMapGenerator
+from pyspades.mapgenerator import ProgressiveMapGenerator, map_cache
 from twisted.logger import Logger
 
 log = Logger()
@@ -294,8 +294,12 @@ class ServerProtocol(BaseProtocol):
         if self.game_mode == TC_MODE:
             self.reset_tc()
         self.players = {}
+        map_cache.reset_cache()
         if self.connections:
+            map_hash = self.get_map_hash(map_obj)
             data = ProgressiveMapGenerator(self.map, parent=True)
+            map_cache.add_map(map_hash, data)
+            data = map_cache.get_map(map_hash)
             for connection in list(self.connections.values()):
                 if connection.player_id is None:
                     continue
@@ -476,6 +480,11 @@ class ServerProtocol(BaseProtocol):
 
     def get_fog_color(self):
         return self.fog_color
+
+    def get_map_hash(self, map_data):
+        map_hash = map_data.get_hash()
+        log.debug(map_hash)
+        return map_hash
 
     # events
 

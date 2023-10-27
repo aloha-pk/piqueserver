@@ -1,24 +1,34 @@
-"""
-The map generator is responsible for generating the map bytes that get sent
-to the client on connect
-"""
 import zlib
+import threading
 
 COMPRESSION_LEVEL = 9
 
+class MapCache:
+    def __init__(self, max_maps=1):
+        self.cache = {}
+        self.max_maps = max_maps
+
+    def add_map(self, map_hash, map_data):
+        if len(self.cache) >= self.max_maps:
+            oldest_map_hash = list(self.cache.keys())[0]
+            del self.cache[oldest_map_hash]
+        
+        self.cache[map_hash] = map_data
+
+    def get_map(self, map_hash):
+        return self.cache.get(map_hash)
+
+    def has_map(self, map_hash):
+        return map_hash in self.cache
+    
+    def reset_cache(self):
+        self.cache.clear()
+
+# Global cache instance
+map_cache = MapCache(max_maps=1)
+
 
 class ProgressiveMapGenerator:
-    """
-    Progressively generates the stream of bytes sent to the client for map
-    downloads.
-
-    It supports two modes. In the default parent=False mode, reading is normal.
-
-    In the `parent=True` mode a child generator is created with `get_child` to
-    actually read the data. This is presumably done so that the work of map
-    generation is not duplicated for each client if several connect at the same
-    time.
-    """
     data = b''
     done = False
 
@@ -27,51 +37,58 @@ class ProgressiveMapGenerator:
     pos = 0
 
     def __init__(self, map_, parent=False):
-        # parent=True enables saving all data sent instead of just
-        # deleting it afterwards.
         self.parent = parent
         self.generator = map_.get_generator()
         self.compressor = zlib.compressobj(COMPRESSION_LEVEL)
+        self.lock = threading.Lock()
+        self.data_ready = threading.Condition(self.lock)
+        self.is_generating = False
 
     def get_size(self):
-        """get the map size, for display of the loading bar on the client"""
-        # This is currently just an estimate, since due to compression
-        # magic, we don't actually know what size the file will be when sent
-        # over the wire
         return 1.5 * 1024 * 1024  # 2MB
 
     def read(self, size):
-        """read size bytes from the map generator"""
-        data = self.data
-        generator = self.generator
-        if len(data) < size and generator is not None:
-            while True:
-                map_data = generator.get_data(size)
-                if generator.done:
-                    self.generator = None
-                    data += self.compressor.flush()
-                    break
+        with self.lock:
+            if len(self.data) < size and self.generator:
+                if self.is_generating:
+                    self.data_ready.wait()
+                else:
+                    self.is_generating = True
+                    thread = threading.Thread(target=self._generate_and_compress_map, args=(size,))
+                    thread.start()
+                    self.data_ready.wait()
+                    self.is_generating = False
+
+            data_to_return = self.data[:size]
+            self.data = self.data[size:]
+
+            if self.parent:
+                self.all_data += data_to_return
+                self.pos += len(data_to_return)
+
+            return data_to_return
+
+    def _generate_and_compress_map(self, size):
+        data = b''
+        while len(data) < size and self.generator:
+            map_data = self.generator.get_data(size)
+            if self.generator.done:
+                data += self.compressor.flush()
+                self.generator = None
+            else:
                 data += self.compressor.compress(map_data)
-                if len(data) >= size:
-                    break
-        if self.parent:
-            # save the data in case we are a parent
-            self.all_data += data
-            self.pos += len(data)
-        else:
-            self.data = data[size:]
-            return data[:size]
+
+        with self.lock:
+            self.data += data
+            self.data_ready.notify_all()
 
     def get_child(self):
-        """return a new child generator"""
         if self.parent:
             return MapGeneratorChild(self)
         else:
-            raise NotImplementedError(
-                "get_child is not implemented for non-parent generators")
+            raise NotImplementedError("get_child is not implemented for non-parent generators")
 
     def data_left(self):
-        """return True if any data is left"""
         return bool(self.data) or self.generator is not None
 
 
@@ -82,11 +99,9 @@ class MapGeneratorChild:
         self.parent = generator
 
     def get_size(self):
-        """get the size of the parent map generator"""
         return self.parent.get_size()
 
     def read(self, size):
-        """read size bytes from the parent map generator, if possible"""
         pos = self.pos
         if pos + size > self.parent.pos:
             self.parent.read(size)
@@ -95,5 +110,4 @@ class MapGeneratorChild:
         return data
 
     def data_left(self):
-        """return True if any data is left"""
         return self.parent.data_left() or self.pos < self.parent.pos

@@ -65,6 +65,12 @@ cdef class VXLData:
     def load_vxl(self, c_data = None):
         self.map = load_vxl(c_data)
 
+    def get_hash(self):
+        return self.get_map_hash()
+
+    cdef char* get_map_hash(self):
+        return compute_map_hash(self.map)
+
     def copy(self):
         cdef VXLData map = VXLData()
         map.map = copy_map(self.map)

@@ -25,12 +25,13 @@ from pyspades.constants import (BLOCK_TOOL, CTF_MODE, ERROR_FULL,
                                 RAPID_WINDOW_ENTRIES, SPADE_TOOL,
                                 TC_CAPTURE_DISTANCE, TC_MODE, WEAPON_KILL,
                                 WEAPON_TOOL)
-from pyspades.mapgenerator import ProgressiveMapGenerator
+from pyspades.mapgenerator import ProgressiveMapGenerator, map_cache
 from pyspades.packet import call_packet_handler, register_packet_handler
 from pyspades.protocol import BaseConnection
 from pyspades.team import Team
 from pyspades.weapon import WEAPONS
 from pyspades.types import RateLimiter
+from time import monotonic
 
 log = Logger()
 
@@ -1053,7 +1054,17 @@ class ServerConnection(BaseConnection):
 
     def _connection_ack(self) -> None:
         self._send_connection_data()
+        starttime=monotonic()
+        map_hash = self.protocol.get_map_hash(self.protocol.map)
+        if not map_cache.has_map(map_hash):
+            log.debug("generating new map...")
+            data = ProgressiveMapGenerator(self.protocol.map)
+            map_cache.add_map(map_hash, data)
+        else:
+            log.debug("sending cached map")
+            data = map_cache.get_map(map_hash)
         self.send_map(ProgressiveMapGenerator(self.protocol.map))
+        log.debug("Map handling: " + str(round((monotonic()-starttime)*1000)) + "ms")
 
     def _send_connection_data(self) -> None:
         saved_loaders = self.saved_loaders = []
