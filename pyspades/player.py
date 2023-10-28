@@ -32,6 +32,10 @@ from pyspades.team import Team
 from pyspades.weapon import WEAPONS
 from pyspades.types import RateLimiter
 from time import monotonic
+from pyspades.bytes import ByteWriter
+
+import enet
+
 
 log = Logger()
 
@@ -1056,14 +1060,13 @@ class ServerConnection(BaseConnection):
         self._send_connection_data()
         starttime=monotonic()
         map_hash = self.protocol.get_map_hash(self.protocol.map)
+        log.debug(map_hash)
         if not map_cache.has_map(map_hash):
             log.debug("generating new map...")
-            data = ProgressiveMapGenerator(self.protocol.map)
-            map_cache.add_map(map_hash, data)
+            self.send_map(ProgressiveMapGenerator(self.protocol.map))
         else:
             log.debug("sending cached map")
-            data = map_cache.get_map(map_hash)
-        self.send_map(data)
+            self.send_map()
         log.debug("Map handling: " + str(round((monotonic()-starttime)*1000)) + "ms")
 
     def _send_connection_data(self) -> None:
@@ -1211,15 +1214,56 @@ class ServerConnection(BaseConnection):
         self.send_contained(weapon_reload)
 
     def send_map(self, data: Optional[ProgressiveMapGenerator] = None) -> None:
-        if data is not None:
-            self.map_data = data
-            map_start = loaders.MapStart()
-            map_start.size = data.get_size()
-            self.send_contained(map_start)
-        elif self.map_data is None:
-            return
+        map_hash = self.protocol.get_map_hash(self.protocol.map)
+        if not map_cache.has_map(map_hash):
+            containedlist = []
+            if data is not None:
+                self.map_data = data
+                map_start = loaders.MapStart()
+                map_start.size = data.get_size()
+                self.send_contained(map_start)
+                writer = ByteWriter()
+                map_start.write(writer)
+                data = bytes(writer)
+                containedlist.append(data)
+            elif self.map_data is None:
+                return
 
-        if not self.map_data.data_left():
+            if not self.map_data.data_left():
+                all_contained = map_cache.get_map("_" + map_hash) + containedlist
+                map_cache.del_map("_"+map_hash)
+                map_cache.add_map(map_hash, all_contained)
+                log.debug("done sending map data to {player}", player=self)
+                self.map_data = None
+                for data in self.saved_loaders:
+                    packet = enet.Packet(bytes(data), enet.PACKET_FLAG_RELIABLE)
+                    self.peer.send(0, packet)
+                self.saved_loaders = None
+                self.on_join()
+                if not self.client_info:
+                    handshake_init = loaders.HandShakeInit()
+                    self.send_contained(handshake_init)
+                return
+            for _ in range(10):
+                if not self.map_data.data_left():
+                    break
+                map_data = loaders.MapChunk()
+                map_data.data = self.map_data.read(8192)
+                self.send_contained(map_data)
+                writer = ByteWriter()
+                map_data.write(writer)
+                data = bytes(writer)
+                containedlist.append(data)
+            if map_cache.has_map("_" + map_hash):
+                lastlist = map_cache.get_map("_" + map_hash)
+                map_cache.add_map("_"+map_hash, lastlist + containedlist)
+            else:
+                map_cache.add_map("_"+map_hash, containedlist)
+        else:
+            containedlist = map_cache.get_map(map_hash)
+            for data in containedlist:
+                packet = enet.Packet(bytes(data), enet.PACKET_FLAG_RELIABLE)
+                self.peer.send(0, packet)
             log.debug("done sending map data to {player}", player=self)
             self.map_data = None
             for data in self.saved_loaders:
@@ -1230,13 +1274,6 @@ class ServerConnection(BaseConnection):
             if not self.client_info:
                 handshake_init = loaders.HandShakeInit()
                 self.send_contained(handshake_init)
-            return
-        for _ in range(10):
-            if not self.map_data.data_left():
-                break
-            map_data = loaders.MapChunk()
-            map_data.data = self.map_data.read(8192)
-            self.send_contained(map_data)
 
     def continue_map_transfer(self) -> None:
         self.send_map()

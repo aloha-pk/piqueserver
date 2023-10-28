@@ -12,15 +12,18 @@ class MapCache:
         if len(self.cache) >= self.max_maps:
             oldest_map_hash = list(self.cache.keys())[0]
             del self.cache[oldest_map_hash]
-        
         self.cache[map_hash] = map_data
+
+    def del_map(self, map_hash):
+        if self.cache.get(map_hash) is not None:
+            del self.cache[map_hash]
 
     def get_map(self, map_hash):
         return self.cache.get(map_hash)
 
     def has_map(self, map_hash):
         return map_hash in self.cache
-    
+
     def reset_cache(self):
         self.cache.clear()
 
