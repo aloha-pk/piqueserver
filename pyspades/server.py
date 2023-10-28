@@ -298,6 +298,7 @@ class ServerProtocol(BaseProtocol):
         self.players = {}
         map_cache.reset_cache()
         self.map_writer = None
+        self.support_blocks = []
         if self.connections:
             data = ProgressiveMapGenerator(self.map, parent=True)
             for connection in list(self.connections.values()):

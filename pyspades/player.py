@@ -1221,7 +1221,7 @@ class ServerConnection(BaseConnection):
 
     def send_map(self, data: Optional[ProgressiveMapGenerator] = None, first_time_called=True) -> None:
         map_hash = self.protocol.get_map_hash(self.protocol.map)
-        if not map_cache.has_map(map_hash) or self.classic_transfer==True:
+        if not map_cache.has_map(map_hash) or self.classic_transfer:
             containedlist = []
             if data is not None:
                 self.map_data = data
