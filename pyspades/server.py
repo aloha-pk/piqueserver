@@ -74,7 +74,9 @@ class ServerProtocol(BaseProtocol):
     melee_damage = 100
     version = GAME_VERSION
     respawn_waves = False
-
+    map_writer = None
+    support_blocks = []
+    arena_enabled = False
     def __init__(self, *arg, **kw):
         # +2 to allow server->master and master->server connection since enet
         # allocates peers for both clients and hosts. this is done at
@@ -295,7 +297,9 @@ class ServerProtocol(BaseProtocol):
             self.reset_tc()
         self.players = {}
         map_cache.reset_cache()
+        self.map_writer = None
         if self.connections:
+            data = ProgressiveMapGenerator(self.map, parent=True)
             for connection in list(self.connections.values()):
                 if connection.player_id is None:
                     continue
@@ -304,6 +308,7 @@ class ServerProtocol(BaseProtocol):
                     continue
                 connection.reset()
                 connection._send_connection_data()
+                connection.classic_transfer=True
                 connection.send_map(data.get_child())
         self.update_entities()
 
@@ -478,8 +483,10 @@ class ServerProtocol(BaseProtocol):
         return self.fog_color
 
     def get_map_hash(self, map_data):
-        map_hash = map_data.get_hash().decode("utf")
-        return map_hash
+        if not self.arena_enabled:
+            map_hash = map_data.get_hash().decode("utf")
+            return map_hash
+        return "ARENA_MAP"
 
     # events
 

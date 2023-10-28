@@ -33,9 +33,7 @@ from pyspades.weapon import WEAPONS
 from pyspades.types import RateLimiter
 from time import monotonic
 from pyspades.bytes import ByteWriter
-
 import enet
-
 
 log = Logger()
 
@@ -95,6 +93,7 @@ class ServerConnection(BaseConnection):
     map_data = None
     last_position_update = None
     local = False
+    classic_transfer=True
 
     def __init__(self, *arg, **kw) -> None:
         BaseConnection.__init__(self, *arg, **kw)
@@ -948,6 +947,11 @@ class ServerConnection(BaseConnection):
         if self.player_id is not None:
             self.protocol.player_ids.put_back(self.player_id)
             self.protocol.update_master()
+        map_hash = self.protocol.get_map_hash(self.protocol.map)
+        if not map_cache.has_map(map_hash) and map_cache.has_map("_" + map_hash) and self.protocol.map_writer is self:
+            map_cache.del_map("_"+map_hash)
+            self.protocol.map_writer = None
+
         self.reset()
 
     def reset(self) -> None:
@@ -1063,9 +1067,11 @@ class ServerConnection(BaseConnection):
         log.debug(map_hash)
         if not map_cache.has_map(map_hash):
             log.debug("generating new map...")
+            self.classic_transfer=True
             self.send_map(ProgressiveMapGenerator(self.protocol.map))
         else:
             log.debug("sending cached map")
+            self.classic_transfer=False
             self.send_map()
         log.debug("Map handling: " + str(round((monotonic()-starttime)*1000)) + "ms")
 
@@ -1213,9 +1219,9 @@ class ServerConnection(BaseConnection):
         weapon_reload.reserve_ammo = self.weapon_object.current_stock
         self.send_contained(weapon_reload)
 
-    def send_map(self, data: Optional[ProgressiveMapGenerator] = None) -> None:
+    def send_map(self, data: Optional[ProgressiveMapGenerator] = None, first_time_called=True) -> None:
         map_hash = self.protocol.get_map_hash(self.protocol.map)
-        if not map_cache.has_map(map_hash):
+        if not map_cache.has_map(map_hash) or self.classic_transfer==True:
             containedlist = []
             if data is not None:
                 self.map_data = data
@@ -1225,14 +1231,17 @@ class ServerConnection(BaseConnection):
                 writer = ByteWriter()
                 map_start.write(writer)
                 data = bytes(writer)
-                containedlist.append(data)
+                if self.protocol.map_writer is self: #only write one version
+                    containedlist.append(data)
             elif self.map_data is None:
                 return
 
             if not self.map_data.data_left():
-                all_contained = map_cache.get_map("_" + map_hash) + containedlist
-                map_cache.del_map("_"+map_hash)
-                map_cache.add_map(map_hash, all_contained)
+                if self.protocol.map_writer is self:
+                    self.protocol.map_writer = self
+                    all_contained = map_cache.get_map("_" + map_hash) + containedlist
+                    map_cache.del_map("_"+map_hash)
+                    map_cache.add_map(map_hash, all_contained)
                 log.debug("done sending map data to {player}", player=self)
                 self.map_data = None
                 for data in self.saved_loaders:
@@ -1254,10 +1263,11 @@ class ServerConnection(BaseConnection):
                 map_data.write(writer)
                 data = bytes(writer)
                 containedlist.append(data)
-            if map_cache.has_map("_" + map_hash):
+            if map_cache.has_map("_" + map_hash) and self.protocol.map_writer is self:
                 lastlist = map_cache.get_map("_" + map_hash)
                 map_cache.add_map("_"+map_hash, lastlist + containedlist)
-            else:
+            elif not map_cache.has_map(map_hash) and self.protocol.map_writer is None and first_time_called:
+                self.protocol.map_writer = self
                 map_cache.add_map("_"+map_hash, containedlist)
         else:
             containedlist = map_cache.get_map(map_hash)
@@ -1270,13 +1280,21 @@ class ServerConnection(BaseConnection):
                 packet = enet.Packet(bytes(data), enet.PACKET_FLAG_RELIABLE)
                 self.peer.send(0, packet)
             self.saved_loaders = None
+            if self.protocol.arena_enabled and self.protocol.arena_running: #send removal of fence packets when game is running
+                block_action = loaders.BlockAction()
+                block_action.player_id = 32
+                block_action.value = DESTROY_BLOCK
+                for block in self.protocol.support_blocks:
+                    block_action.x, block_action.y, block_action.z = block
+                    self.send_contained(block_action)
             self.on_join()
             if not self.client_info:
                 handshake_init = loaders.HandShakeInit()
                 self.send_contained(handshake_init)
 
     def continue_map_transfer(self) -> None:
-        self.send_map()
+        if self.classic_transfer:
+            self.send_map(first_time_called=False)
 
     def send_data(self, data):
         self.protocol.transport.write(data, self.address)

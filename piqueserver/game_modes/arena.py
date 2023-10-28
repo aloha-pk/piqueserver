@@ -204,6 +204,7 @@ class Gate:
         set_color.value = make_color(*self.color)
         set_color.player_id = block_line.player_id = 32
         self.protocol_obj.broadcast_contained(set_color, save=True)
+        self.protocol_obj.support_blocks = []
         for block_line_ in self.blocks:
             start_block, end_block = block_line_
             points = world.cube_line(*(start_block + end_block))
@@ -222,6 +223,7 @@ class Gate:
         block_action = BlockAction()
         block_action.player_id = 32
         block_action.value = DESTROY_BLOCK
+        self.protocol_obj.support_blocks += self.support_blocks
         for block in self.support_blocks:  # optimize wire traffic
             if map_.get_solid(*block):
                 map_.remove_point(*block)
