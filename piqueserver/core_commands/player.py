@@ -2,7 +2,7 @@ from piqueserver.commands import (
     command, get_player, PermissionDenied, player_only, target_player)
 
 
-@command("client", "cli")
+@command("client", "cli", "clin")
 @target_player
 def client(connection, player):
     """
