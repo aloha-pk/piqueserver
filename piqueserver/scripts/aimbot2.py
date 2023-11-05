@@ -366,6 +366,7 @@ def apply_script(protocol, connection, config):
                     self.warn_admin()
 
         def on_hit(self, hit_amount, hit_player, hit_type, grenade):
+            print("on hit: aimbot2.py")
             if self.team is hit_player.team or hit_type not in (
                     WEAPON_KILL, HEADSHOT_KILL):
                 return connection.on_hit(
