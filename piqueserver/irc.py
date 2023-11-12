@@ -22,6 +22,7 @@ from operator import attrgetter
 import traceback
 from typing import List
 from twisted.internet.defer import ensureDeferred
+from twisted.internet.endpoints import HostnameEndpoint
 
 from twisted.words.protocols import irc
 from twisted.internet import reactor, protocol
@@ -259,8 +260,8 @@ class IRCRelay:
 
     def __init__(self, protocol, config):
         self.factory = IRCClientFactory(protocol, config)
-        protocol.connectTCP(config.get('server'), config.get('port', 6667),
-                            self.factory)
+        conn = HostnameEndpoint(reactor, config.get('server'), config.get('port', 6667))
+        conn.connect(self.factory)
 
     def send(self, *arg, **kw):
         if self.factory.bot is None:
