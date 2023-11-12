@@ -158,7 +158,7 @@ class IRCBot(irc.IRCClient):
             log.info(escape_control_codes(message))
             self.factory.server.broadcast_chat(message)
         elif (msg.startswith(self.factory.commandprefix) and
-              (user in self.ops) or (user in self.factory.opnames)):
+              ((user in self.ops) or (user in self.factory.opnames))):
             self.unaliased_name = user
             self.name = prefix + alias
             user_input = msg[len(self.factory.commandprefix):]
