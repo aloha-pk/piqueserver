@@ -315,11 +315,8 @@ class FeatureConnection(ServerConnection):
         current_time = reactor.seconds()
         self.chat_limiter.record_event(current_time)
         if self.chat_limiter.above_limit():
-            self.mute = True
-            self.protocol.broadcast_chat(
-                '%s has been muted for excessive spam' % (
-                    self.name),
-                irc=True)
+            self.send_chat('Please wait before sending your next message.')
+            return False
 
         log.info("<{name}> {message}", name=escape_control_codes(
             self.name), message=escape_control_codes(value))
