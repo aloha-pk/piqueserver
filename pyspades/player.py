@@ -217,6 +217,8 @@ class ServerConnection(BaseConnection):
     def on_position_update_recieved(self, contained: loaders.PositionData) -> None:
         if not self.hp:
             return
+        if self.team.spectator:
+            return
         current_time = reactor.seconds()
         last_update = self.last_position_update
         self.last_position_update = current_time
