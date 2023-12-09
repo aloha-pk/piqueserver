@@ -800,10 +800,16 @@ class ServerConnection(BaseConnection):
         self.hp = 100
         self.grenades = 3
         self.blocks = 50
-        self.weapon_object.restock()
+        self.weapon_object.reset()
         if not local:
             restock = loaders.Restock()
             self.send_contained(restock)
+            if self.client_info and self.client_info["client"] == "Ace of Spades" or not self.client_info:
+                weapon_reload = loaders.WeaponReload()
+                weapon_reload.player_id = self.player_id
+                weapon_reload.clip_ammo = self.weapon_object.current_ammo
+                weapon_reload.reserve_ammo = self.weapon_object.current_stock
+                self.send_contained(weapon_reload)
 
     def respawn(self) -> None:
         if self.spawn_call is None:
