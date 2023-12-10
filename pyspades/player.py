@@ -802,7 +802,7 @@ class ServerConnection(BaseConnection):
         if not local:
             restock = loaders.Restock()
             self.send_contained(restock)
-            if self.client_info and self.client_info["client"] == "Ace of Spades" or not self.client_info:
+            if self.client_info and self.client_info.get("client", "Ace of Spades") == "Ace of Spades" or not self.client_info:
                 weapon_reload = loaders.WeaponReload()
                 weapon_reload.player_id = self.player_id
                 weapon_reload.clip_ammo = self.weapon_object.current_ammo
