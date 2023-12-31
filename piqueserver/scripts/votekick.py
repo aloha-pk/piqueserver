@@ -77,6 +77,7 @@ REQUIRED_PERCENTAGE_OPTION = VOTEKICK_CONFIG.option('percentage', 35.0)
 BAN_DURATION_OPTION = VOTEKICK_CONFIG.option(
     'ban_duration', default="30min", cast=cast_duration)
 PUBLIC_VOTES_OPTION = VOTEKICK_CONFIG.option('public_votes', True)
+ONE_VOTE_PER_IP_OPTION = VOTEKICK_CONFIG.option('one_vote_per_ip', True)
 
 
 class VotekickFailure(Exception):
@@ -178,6 +179,7 @@ class Votekick:
     join_delay = 15.0
     ban_duration = BAN_DURATION_OPTION.get()
     public_votes = PUBLIC_VOTES_OPTION.get()
+    one_vote_per_ip = ONE_VOTE_PER_IP_OPTION.get()
     schedule = None
 
     @property
@@ -247,6 +249,13 @@ class Votekick:
         self.schedule = schedule
 
     def vote(self, player):
+        if self.one_vote_per_ip:
+            addresses = [p.address[0] for p in list(self.votes.keys()) if type(p) != str]
+            if player.address[0] == self.instigator.address[0]:
+                return
+            elif player.address[0] in addresses:
+                return
+
         if self.victim is player:
             return
         elif player in self.votes:
