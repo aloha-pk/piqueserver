@@ -15,7 +15,7 @@ HIDE_POS = (0, 0, 63)
 
 DISABLED, ONE_CTF, REVERSE_ONE_CTF = range(3)
 
-ONE_CTF_MODE = REVERSE_ONE_CTF
+ONE_CTF_MODE = ONE_CTF
 
 # In reverse ctf, the goal is to take the intel to the enemy base
 
