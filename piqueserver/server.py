@@ -318,6 +318,9 @@ class FeatureProtocol(ServerProtocol):
         self.server_prefix = server_prefix.get()
         self.time_announcements = time_announcements.get()
         self.balanced_teams = balanced_teams.get()
+        self.command_antispam = cmd_antispam_enable.get()
+        self.command_limit_size = cmd_command_limit_size.get()
+        self.command_limit_time = cmd_command_limit_time.get()
 
         # voting configuration
         self.default_ban_time = default_ban_duration.get()

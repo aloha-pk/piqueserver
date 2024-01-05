@@ -36,8 +36,6 @@ def apply_script(protocol, connection, config):
                 flag = self.team.flag
                 flag.set(*HIDE_POS)
                 flag.update()
-                if self.protocol.reverse_one_ctf:
-                    self.send_chat(REVERSE_ONE_CTF_MESSAGE)
             return value
 
         def on_flag_drop(self):
