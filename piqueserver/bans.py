@@ -180,7 +180,7 @@ class DefaultBanManager(BaseBanManager):
     def get_ban(self, network) -> Optional[Ban]:
         try:
             result = self.database.get_entry(network)
-            return ip_network(str(network), strict=False), *result
+            return (ip_network(str(network), strict=False), *result)
         except KeyError:
             return None
 
