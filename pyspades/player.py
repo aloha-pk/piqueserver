@@ -207,6 +207,8 @@ class ServerConnection(BaseConnection):
             self.on_hack_attempt(
                 'Invalid orientation data received')
             return
+        if x == 0:
+            return
         returned = self.on_orientation_update(x, y, z)
         if returned == False:
             return
