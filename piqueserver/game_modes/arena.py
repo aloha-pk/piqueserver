@@ -89,6 +89,15 @@ def coord(connection):
 
 @command(admin_only=True)
 def forcestart(connection):
+    if connection.protocol.arena_running:
+        return 'Match has already started'
+
+    # Stop the countdown
+    if connection.protocol.arena_counting_down:
+        for timer in connection.protocol.arena_countdown_timers:
+            if timer.cancelled == 0 and timer.called == 0:
+                timer.cancel()
+
     connection.protocol.begin_arena()
     return 'Countdown forced'
 
