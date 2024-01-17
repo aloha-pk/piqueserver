@@ -239,26 +239,25 @@ def toggle_teamkill(connection, player=None):
                                     (connection.name,
                                      ['disabled', 'enabled'][int(value)], player.name))
     else:
-        value = True
-        on_off = 'ON'
-        if connection.protocol.friendly_fire == 'on_grief':
-            value = False
-            on_off = 'OFF'
-        elif connection.protocol.friendly_fire:
-            value = 'on_grief'
-            on_off = 'to only on grief'
+        value = not connection.protocol.friendly_fire
         connection.protocol.friendly_fire = value
+        on_off = 'ON' if value else 'OFF'
+        if not value:
+            connection.protocol.friendly_fire_on_grief = False
+
         connection.protocol.broadcast_chat(
             'Friendly fire has been toggled %s!' % on_off)
         connection.protocol.irc_say('* %s toggled friendly fire %s' % (
             connection.name, on_off))
 
 
-@command('griefteamkill', 'gtk', admin_only=True)
+@command('togglegriefteamkill', 'tgtk', admin_only=True)
 def grief_teamkill(connection):
-    connection.protocol.friendly_fire = 'on_grief'
-    connection.protocol.broadcast_chat('Friendly fire has been toggled to only on grief!')
-    connection.protocol.irc_say('* %s toggled friendly fire to only on grief' % connection.name)
+    value = not connection.protocol.friendly_fire_on_grief
+    connection.protocol.friendly_fire_on_grief = value
+    on_off = 'ON' if value else 'OFF'
+    connection.protocol.broadcast_chat(f'Friendly fire on grief has been toggled {on_off}')
+    connection.protocol.irc_say(f'* {connection.name} toggled friendly fire on grief {on_off}')
 
 
 @command('allowteamkill', 'atk', admin_only=True)
