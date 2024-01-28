@@ -56,7 +56,7 @@ from piqueserver.scheduler import Scheduler
 from piqueserver.utils import ensure_dir_exists, as_deferred, EndCall
 from piqueserver.bansubscribe import bans_config_urls
 from pyspades.bytes import NoDataLeft
-from pyspades.constants import CTF_MODE, ERROR_SHUTDOWN, TC_MODE
+from pyspades.constants import CTF_MODE, ERROR_SHUTDOWN, TC_MODE, EXTENSION_CHATTYPE
 from pyspades.master import MAX_SERVER_NAME_SIZE
 from pyspades.server import ServerProtocol, Team
 from pyspades.tools import make_server_identifier
@@ -280,6 +280,8 @@ class FeatureProtocol(ServerProtocol):
         if b_backend:
             b_backend_class = extensions.load_backend(b_backend, 'bans/')
             self.ban_manager = b_backend_class(self)
+
+        self.available_proto_extensions = [(EXTENSION_CHATTYPE, 1)]
 
         self.hard_bans = set()  # possible DDoS'ers are added here
         self.player_memory = deque(maxlen=100)
@@ -684,7 +686,8 @@ class FeatureProtocol(ServerProtocol):
                     "players_max": self.max_players,
                     "map": map_name,
                     "game_mode": self.get_mode_name(),
-                    "game_version": "0.75"
+                    "game_version": "0.75",
+                    "extensions": self.available_proto_extensions
                 }
                 payload = json.dumps(entry).encode()
                 self.host.socket.send(address, payload)
