@@ -727,6 +727,7 @@ class ServerConnection(BaseConnection):
             ord('o') : "OpenSpades",
             ord('B') : "BetterSpades",
             ord('V') : "Voxenium",
+            ord('D') : "Voxlap with aos.dll",
         }
 
         if client_names[ord(contained.client)]:
