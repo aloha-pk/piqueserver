@@ -994,3 +994,30 @@ cdef class ProtocolExtensionInfo(Loader):
             writer.writeByte(ext[1])
 
 register_packet(ProtocolExtensionInfo)
+
+
+PACKET_EXT_BASE = 0x40
+
+cdef class PlayerPropertiesV1(Loader):
+    ext_id = 0
+    ext_version = 1
+    id = PACKET_EXT_BASE + ext_id
+
+    cdef public:
+        unsigned int player_id, health, blocks, grenades, ammo_clip, ammo_reserved, score
+
+    cpdef read(self, ByteReader reader):
+        pass
+
+    cpdef write(self, ByteWriter writer):
+        writer.writeByte(self.id)
+        writer.writeByte(0)
+        writer.writeByte(self.player_id)
+        writer.writeByte(self.health)
+        writer.writeByte(self.blocks)
+        writer.writeByte(self.grenades)
+        writer.writeByte(self.ammo_clip)
+        writer.writeByte(self.ammo_reserved)
+        writer.writeInt(self.score, True, False)
+
+register_packet(PlayerPropertiesV1)
