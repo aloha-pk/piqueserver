@@ -360,11 +360,16 @@ async def handle_command(connection, command, parameters):
 
     if result == False:
         parameters = ['***'] * len(parameters)
-    log_message = '<{}> /{} {}'.format(connection.name, command,
-                                       ' '.join(parameters))
+
+    log_message = '<{name}> /{command} {parameters}'
     if result:
-        log_message += ' -> %s' % result
-    log.info(escape_control_codes(log_message))
+        log_message += ' -> {result}'
+
+    log.info(log_message,
+             name=escape_control_codes(connection.name),
+             command=escape_control_codes(command),
+             parameters=escape_control_codes(' '.join(parameters)),
+             result=escape_control_codes(str(result)) if result is not None else None)
 
     return result
 
@@ -379,13 +384,32 @@ async def _handle_command(connection, command, parameters):
     if not has_permission(command_func, connection):
         return "You can't use this command"
 
-    argspec = inspect.getfullargspec(command_func)
-    min_params = len(argspec.args) - 1 - len(argspec.defaults or ())
-    max_params = len(argspec.args) - 1 if argspec.varargs is None else None
+    argspec = inspect.signature(command_func, follow_wrapped=True)
+
+    # all args
+    positional_args = [
+        param for param in argspec.parameters.values()
+        if param.kind == param.POSITIONAL_ONLY or
+           param.kind == param.POSITIONAL_OR_KEYWORD
+    ]
+
+    # we need to subtract 1 for the first argument which is always connection
+    min_params = len([
+        param for param in positional_args
+        if param.default == inspect._empty
+    ]) - 1
+
+    # check if we have a 'rest' arg
+    vararg = next((
+        param for param in argspec.parameters.values()
+        if param.kind == param.VAR_POSITIONAL
+    ), None)
+
+    max_params = max(0, len(positional_args) - 1)
     len_params = len(parameters)
 
-    if (len_params < min_params
-            or max_params is not None and len_params > max_params):
+    if len_params < min_params or \
+       (vararg is None and len_params > max_params):
         return format_command_error(
             command_func, 'Invalid number of arguments')
 
