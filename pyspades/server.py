@@ -85,7 +85,7 @@ class ServerProtocol(BaseProtocol):
         BaseProtocol.__init__(self, *arg, **kw)
         self.entities = []
         self.players = {}
-        self.player_ids = IDPool(self)
+        self.player_ids = IDPool(start=0, end=32)
 
         self._create_teams()
 
