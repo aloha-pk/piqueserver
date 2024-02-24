@@ -1,4 +1,4 @@
-from pyspades.types import IDPool, AttributeSet
+from pyspades.types import IDPool, AttributeSet, OutOfIDsException
 import unittest
 
 
@@ -14,6 +14,15 @@ class TestIDPool(unittest.TestCase):
         pool.put_back(5)
         self.assertEqual(5, pool.pop())
 
+    def test_out_of_ids(self):
+        pool = IDPool(start=0, end=4)
+        pool.pop()
+        pool.pop()
+        pool.pop()
+        pool.pop()
+        self.assertRaises(OutOfIDsException, pool.pop)
+        pool.put_back(0)
+        self.assertEqual(0, pool.pop())
 
 class TestAttributeSet(unittest.TestCase):
     def test_set(self):
