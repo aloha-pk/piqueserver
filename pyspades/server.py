@@ -27,7 +27,7 @@ from pyspades.protocol import BaseProtocol
 from pyspades.constants import (
     CTF_MODE, TC_MODE, GAME_VERSION, MIN_TERRITORY_COUNT, MAX_TERRITORY_COUNT,
     UPDATE_FREQUENCY, UPDATE_FPS, DEFAULT_NETWORK_FPS)
-from pyspades.types import ProtocolIDPool
+from pyspades.types import IDPool
 from pyspades.master import get_master_connection
 from pyspades.team import Team
 from pyspades.entities import Territory
@@ -85,7 +85,7 @@ class ServerProtocol(BaseProtocol):
         BaseProtocol.__init__(self, *arg, **kw)
         self.entities = []
         self.players = {}
-        self.player_ids = ProtocolIDPool(self)
+        self.player_ids = IDPool(self)
 
         self._create_teams()
 
