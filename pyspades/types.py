@@ -29,6 +29,9 @@ import itertools
 from collections import deque
 
 
+class OutOfIDsException(Exception):
+    pass
+
 class IDPool:
     """
     Manage pool of IDs
@@ -45,37 +48,21 @@ class IDPool:
     11
     """
 
-    def __init__(self, start=0):
-        self.free_ids = []
-        self.new_ids = itertools.count(start)
+    def __init__(self, start=0, end=32):
+        self.used_ids = []
+        self.start = start
+        self.end = end
 
     def pop(self):
-        if self.free_ids:
-            return self.free_ids.pop()
-        else:
-            return next(self.new_ids)
+        for id_ in range(self.start, self.end):
+            if id_ not in self.used_ids:
+                self.used_ids += [id_]
+                return id_
 
-    def put_back(self, id):
-        self.free_ids.append(id)
+        raise OutOfIDsException()
 
-class ProtocolIDPool(IDPool):
-    def __init__(self, protocol, start=0):
-        super().__init__(start)
-        self.protocol = protocol
-        
-    def pop(self):
-        id = super().pop()
-
-        # HACKHACK: fix aloha-pk/piqueserver#8
-        if id > 31:
-            taken_ids = []
-            for i in self.protocol.connections:
-                taken_ids.append(self.protocol.connections[i].player_id)
-            self.free_ids = list(set(range(0, 32)) - set(taken_ids))
-            id = super(self).pop()
-
-        return id
-            
+    def put_back(self, id_):
+        self.used_ids.remove(id_)
 
 class AttributeSet(set):
     """
