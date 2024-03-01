@@ -1183,7 +1183,7 @@ class ServerConnection(BaseConnection):
         generated_data = state_data.generate()
         saved_loaders.append(generated_data)
 
-    def grenade_exploded(self, grenade: world.Grenade) -> None:
+    def grenade_exploded(self, grenade: world.Grenade, remove_blocks_first: bool = False) -> None:
         if self.name is None or self.team.spectator:
             return
         if grenade.team is not None and grenade.team is not self.team:
@@ -1198,40 +1198,51 @@ class ServerConnection(BaseConnection):
         x = int(math.floor(x))
         y = int(math.floor(y))
         z = int(math.floor(z))
-        for player_list in (self.team.other.get_players(), (self,)):
-            for player in player_list:
-                # not sure when world_object is ever none, but it's
-                # the source of a crash
-                if not player.hp or player.world_object is None:
-                    continue
-                damage = grenade.get_damage(player.world_object.position)
-                if damage == 0:
-                    continue
-                self.on_unvalidated_hit(damage, player, GRENADE_KILL, grenade)
-                returned = self.on_hit(damage, player, GRENADE_KILL, grenade)
-                if returned == False:
-                    continue
-                elif returned is not None:
-                    damage = returned
-                player.set_hp(player.hp - damage, self,
-                              hit_indicator=position.get(), kill_type=GRENADE_KILL,
-                              grenade=grenade)
-        if self.on_block_destroy(x, y, z, GRENADE_DESTROY) == False:
-            return
-        map = self.protocol.map
-        for n_x, n_y, n_z in product(range(x - 1, x + 2), range(y - 1, y + 2), range(z - 1, z + 2)):
-            count = map.destroy_point(n_x, n_y, n_z)
-            if count:
-                self.total_blocks_removed += count
-                self.on_block_removed(n_x, n_y, n_z)
-        block_action = loaders.BlockAction()
-        block_action.x = x
-        block_action.y = y
-        block_action.z = z
-        block_action.value = GRENADE_DESTROY
-        block_action.player_id = self.player_id
-        self.protocol.broadcast_contained(block_action, save=True)
-        self.protocol.update_entities()
+                
+        def damage_players():
+            for player_list in (self.team.other.get_players(), (self,)):
+                for player in player_list:
+                    # not sure when world_object is ever none, but it's
+                    # the source of a crash
+                    if not player.hp or player.world_object is None:
+                        continue
+                    damage = grenade.get_damage(player.world_object.position)
+                    if damage == 0:
+                        continue
+                    self.on_unvalidated_hit(damage, player, GRENADE_KILL, grenade)
+                    returned = self.on_hit(damage, player, GRENADE_KILL, grenade)
+                    if returned == False:
+                        continue
+                    elif returned is not None:
+                        damage = returned
+                    player.set_hp(player.hp - damage, self,
+                                hit_indicator=position.get(), kill_type=GRENADE_KILL,
+                                grenade=grenade)    
+                                    
+        def remove_blocks():
+            if self.on_block_destroy(x, y, z, GRENADE_DESTROY) == False:
+                return
+            map = self.protocol.map
+            for n_x, n_y, n_z in product(range(x - 1, x + 2), range(y - 1, y + 2), range(z - 1, z + 2)):
+                count = map.destroy_point(n_x, n_y, n_z)
+                if count:
+                    self.total_blocks_removed += count
+                    self.on_block_removed(n_x, n_y, n_z)
+            block_action = loaders.BlockAction()
+            block_action.x = x
+            block_action.y = y
+            block_action.z = z
+            block_action.value = GRENADE_DESTROY
+            block_action.player_id = self.player_id
+            self.protocol.broadcast_contained(block_action, save=True)
+            self.protocol.update_entities()
+
+        if remove_blocks_first:
+            remove_blocks()
+            damage_players()
+        else:
+            damage_players()
+            remove_blocks()
 
     def _on_fall(self, damage: int) -> None:
         if not self.hp:
