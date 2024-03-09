@@ -99,7 +99,8 @@ def notify_login(connection) -> None:
     connection.protocol.irc_say('* ' + message.format(connection.name, user_info))
 
 def notify_logout(connection) -> None:
-    connection.on_user_logout(connection.login_info[0])
+    roles = connection.login_info[0] if connection.login_info else None
+    connection.on_user_logout(roles)
     connection.send_chat('Logout successful')
     connection.protocol.irc_say('* {} logged out'.format(connection.name))
     connection.login_info = None
