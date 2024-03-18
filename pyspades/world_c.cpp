@@ -121,7 +121,7 @@ int validate_hit(float shooter_x, float shooter_y, float shooter_z,
 // silly VOXLAP function
 inline void ftol(float f, long *a)
 {
-    *a = (long)floor(f + 0.5f);
+    *a = (long) f;
 }
 
 //same as isvoxelsolid but water is empty && out of bounds returns true
