@@ -732,7 +732,7 @@ class ServerConnection(BaseConnection):
         self.client_info["version"] = contained.version
         self.client_info["os_info"] = contained.os_info[:108]
         client_names = {
-            ord('a') : "Ace of Spades",
+            ord('a') : "ACE",
             ord('o') : "OpenSpades",
             ord('B') : "BetterSpades",
             ord('V') : "Voxenium",
