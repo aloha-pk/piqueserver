@@ -7,12 +7,13 @@ Release thread:
 http://www.buildandshoot.com/viewtopic.php?t=2586
 """
 
+import math
 from pyspades.constants import CTF_MODE
 from pyspades.collision import vector_collision
 
 FLAG_SPAWN_POS = (256, 256)
 
-HIDE_POS = (0, 0, 63)
+HIDE_POS = (math.inf, math.inf, 128)
 
 DISABLED, ONE_CTF, REVERSE_ONE_CTF = range(3)
 
@@ -23,7 +24,7 @@ BABEL_CTF_MESSAGE = 'Take the intel to the enemy base to score.'
 
 def apply_script(protocol, connection, config):
 
-    class OneCTFConnection(connection): 
+    class OneCTFConnection(connection):
         def on_flag_take(self):
             if self.protocol.one_ctf or self.protocol.reverse_one_ctf:
                 flag = self.team.flag
