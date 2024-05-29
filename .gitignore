@@ -70,10 +70,5 @@ htmlcov
 *.swp
 *.swo
 
-# aloha-specific
-aloha
-venv-master
-venv-testing
-
 # setuptools-scm
 piqueserver/_version.py
