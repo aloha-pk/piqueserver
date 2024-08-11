@@ -2,12 +2,13 @@
 One CTF: CTF with a single intel, placed in the center.
 """
 
+import math
 from pyspades.constants import *
 from pyspades.collision import vector_collision
 
 FLAG_SPAWN_POS = (256, 256)
 
-HIDE_POS = (0, 0, 63)
+HIDE_POS = (math.inf, math.inf, 128)
 
 # 1CTF and R1CTF can be enabled via the map metadata. Enable it by setting
 # 'one_ctf' to 'True' or 'reverse_one_ctf' to 'True' in the extensions dictionary. ex:
@@ -72,18 +73,21 @@ def apply_script(protocol, connection, config):
             return pos
 
     class OneCTFConnection(connection):
-
         def on_flag_take(self):
             if self.protocol.one_ctf or self.protocol.reverse_one_ctf:
                 flag = self.team.flag
-                if flag.player is None:
-                    flag.set(*HIDE_POS)
-                    flag.update()
-                    if self.protocol.reverse_one_ctf:
-                        self.send_chat(REVERSE_ONE_CTF_MESSAGE)
-                else:
+                if flag.player is not None:
                     return False
-            return connection.on_flag_take(self)
+            value = connection.on_flag_take(self)
+            if value == False:
+                return value
+            if self.protocol.one_ctf or self.protocol.reverse_one_ctf:
+                flag = self.team.flag
+                flag.set(*HIDE_POS)
+                flag.update()
+                if self.protocol.reverse_one_ctf:
+                    self.send_chat(REVERSE_ONE_CTF_MESSAGE)
+            return value
 
         def on_flag_drop(self):
             if self.protocol.one_ctf or self.protocol.reverse_one_ctf:

@@ -65,7 +65,7 @@ def pm(connection, value, *arg):
     """
     player = get_player(connection.protocol, value)
     message = join_arguments(arg)
-    if len(message) == 0:
+    if not message:
         return "Please specify your message"
     player.send_chat('PM from %s: %s' % (connection.name, message))
     return 'PM sent to %s' % player.name
@@ -88,7 +88,13 @@ def to_admin(connection, *arg):
             prefix = '\x0304' + prefix + '\x0f'
         irc_relay.send(prefix + ' <%s> %s' % (connection.name, message))
     for player in protocol.players.values():
-        if player.admin and player is not connection:
+        can_view_admin_messages = (
+            player.admin or
+            player.user_types.moderator or
+            player.user_types.guard
+        )
+
+        if can_view_admin_messages and player is not connection:
             player.send_chat('To ADMINS from %s: %s' %
                              (connection.name, message))
     return 'Message sent to all admins currently online'

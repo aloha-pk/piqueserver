@@ -12,8 +12,6 @@ An Ace of Spades 0.75 server based on
    link <https://riot.im/app/#/room/#piqueserver:matrix.org>`__)
 -  Discord: Join with `this invite link <https://discord.gg/w6Te7xC>`__
 -  Slack: Join with `this invite link <https://join.slack.com/t/piqueserver/shared_invite/enQtMjg5MDI3MTkwNTgxLTNhMDkyNDRkNzhiNmQyYjRkOTdjNGNkYzNhNTQ4NzZkY2JhZjQxYzIyMTQ0Y2JlYTI2ZGFjMTFmNjAwZTM2OGU>`__
--  IRC: (disabled due to spam) ``#piqueserver`` on freenode.net
-   (`web <http://webchat.freenode.net/?channels=%23piqueserver>`__)
 
 All of these are `bridged <https://matrix.org/docs/guides/faq.html#what-is-matrix>`__ together!
 
@@ -47,7 +45,7 @@ All of these are `bridged <https://matrix.org/docs/guides/faq.html#what-is-matri
 Requirements
 ~~~~~~~~~~~~
 
-Piqueserver requires python 3.7 and above
+Piqueserver requires Python 3.8 and above
 
 We currently provide builds for:
  - Linux x86_64
@@ -83,12 +81,9 @@ git (bleeding edge)
     python3 -m venv venv
     source venv/bin/activate
 
-    # note: requirements.txt includes all optional deps too
-    pip install -r requirements.txt
+    pip install .
 
-    python setup.py install
-
-    # now `piqueserver` will be available on the $PATH when venv active
+    # now `piqueserver` will be available on the $PATH when venv is active
 
 Arch Linux
 ~~~~~~~~~~
@@ -184,9 +179,7 @@ Use ``python3`` and ``pip`` to setup the development environment:
 .. code:: bash
 
     $ python3 -m venv venv && source venv/bin/activate
-    (venv) $ pip install -r requirements.txt
-    (venv) $ pip install -r dev-requirements.txt # includes dev tools
-    (venv) $ python setup.py develop             # install in-place
+    (venv) $ pip install -e '.[dev]' # install in-place
     (venv) $ deactivate # Deactivate virtualenv
 
 --------------
