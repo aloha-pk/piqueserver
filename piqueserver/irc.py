@@ -144,8 +144,7 @@ class IRCBot(irc.IRCClient):
     @channel
     def privmsg(self, user, irc_channel, msg):
         if (user not in self.ops and
-            user not in self.voices and
-            user not in self.factory.opnames):
+            user not in self.voices):
             return  # This user is unpriviledged
 
         prefix = '@' if user in self.ops else '+'
@@ -159,7 +158,7 @@ class IRCBot(irc.IRCClient):
             log.info('{message}', message=escape_control_codes(message))
             self.factory.server.broadcast_chat(message)
         elif (msg.startswith(self.factory.commandprefix) and
-              ((user in self.ops) or (user in self.factory.opnames))):
+              (user in self.ops)):
             self.unaliased_name = user
             self.name = prefix + alias
             user_input = msg[len(self.factory.commandprefix):]
@@ -231,7 +230,6 @@ class IRCClientFactory(protocol.ClientFactory):
         self.commandprefix = config.get('commandprefix', '.')
         self.chatprefix = config.get('chatprefix', '')
         self.password = config.get('password', '') or None
-        self.opnames = config.get('opnames', [])
         self.service: IRCService
 
     def startFactory(self):
