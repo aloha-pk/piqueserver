@@ -21,6 +21,7 @@ from itertools import groupby, chain
 from operator import attrgetter
 import traceback
 from typing import List
+from twisted.application.internet import ClientService
 from twisted.internet.defer import ensureDeferred
 from twisted.internet.endpoints import HostnameEndpoint
 
@@ -143,8 +144,7 @@ class IRCBot(irc.IRCClient):
     @channel
     def privmsg(self, user, irc_channel, msg):
         if (user not in self.ops and
-            user not in self.voices and
-            user not in self.factory.opnames):
+            user not in self.voices):
             return  # This user is unpriviledged
 
         prefix = '@' if user in self.ops else '+'
@@ -158,7 +158,7 @@ class IRCBot(irc.IRCClient):
             log.info('{message}', message=escape_control_codes(message))
             self.factory.server.broadcast_chat(message)
         elif (msg.startswith(self.factory.commandprefix) and
-              ((user in self.ops) or (user in self.factory.opnames))):
+              (user in self.ops)):
             self.unaliased_name = user
             self.name = prefix + alias
             user_input = msg[len(self.factory.commandprefix):]
@@ -206,8 +206,6 @@ class IRCBot(irc.IRCClient):
 
 class IRCClientFactory(protocol.ClientFactory):
     protocol = IRCBot
-    lost_reconnect_delay = 20
-    failed_reconnect_delay = 60
     bot = None
     aliases = None
     colors = True
@@ -232,44 +230,59 @@ class IRCClientFactory(protocol.ClientFactory):
         self.commandprefix = config.get('commandprefix', '.')
         self.chatprefix = config.get('chatprefix', '')
         self.password = config.get('password', '') or None
-        self.opnames = config.get('opnames', [])
+        self.service: IRCService
 
-    def startedConnecting(self, connector):
-        log.info("Connecting to IRC server...")
+    def startFactory(self):
+        log.info('Connecting to IRC server...')
 
-    def clientConnectionLost(self, connector, reason):
-        log.info(
-            ("Lost connection to IRC server ({reason}), reconnecting in"
-             " {time} seconds"),
-            reason=reason,
-            lost_reconnect_delay=self.lost_reconnect_delay
-        )
-        reactor.callLater(self.lost_reconnect_delay, connector.connect)
-
-    def clientConnectionFailed(self, connector, reason):
-        log.info(
-            ("Could not connect to IRC server ({reason}), retrying in"
-             " {time} seconds"),
-            reason=reason,
-            time=self.failed_reconnect_delay
-        )
-        reactor.callLater(self.failed_reconnect_delay, connector.connect)
+    def stopFactory(self):
+        self.service.client_disconnected()
 
     def buildProtocol(self, address):
+        assert self.protocol is not None
+
         p = self.protocol()
         p.factory = self
         p.protocol = self.server
         self.bot = p
         return p
 
+class IRCService(ClientService):
+    def __init__(self, endpoint, factory) -> None:
+        super().__init__(
+            endpoint=endpoint,
+            factory=factory,
+            prepareConnection=self.client_connected,
+        )
+
+        self.connection = None
+
+    def client_connected(self, connection):
+        self.connection = connection
+
+    def client_disconnected(self):
+        if self.connection is not None:
+            log.info('Lost connection to IRC server, reconnecting')
+        else:
+            log.info('Could not connect to IRC server, retrying')
+
+        self.connection = None
 
 class IRCRelay:
     factory = None
 
     def __init__(self, protocol, config):
-        self.factory = IRCClientFactory(protocol, config)
-        conn = HostnameEndpoint(reactor, config.get('server'), config.get('port', 6667))
-        conn.connect(self.factory)
+        endpoint = HostnameEndpoint(
+            reactor,
+            config.get('server'),
+            config.get('port', 6667),
+        )
+
+        factory = IRCClientFactory(protocol, config)
+        service = IRCService(endpoint, factory)
+        factory.service = service
+
+        service.startService()
 
     def send(self, *arg, **kw):
         if self.factory.bot is None:
@@ -280,7 +293,6 @@ class IRCRelay:
         if self.factory.bot is None:
             return
         self.factory.bot.me(*arg, **kw)
-
 
 def format_name(player):
     return '{} #{}'.format(player.name, player.player_id)
