@@ -278,7 +278,7 @@ class IRCRelay:
             config.get('port', 6667),
         )
 
-        factory = IRCClientFactory(protocol, config)
+        self.factory = factory = IRCClientFactory(protocol, config)
         service = IRCService(endpoint, factory)
         factory.service = service
 
