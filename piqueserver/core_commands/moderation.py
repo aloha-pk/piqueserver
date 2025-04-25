@@ -388,3 +388,30 @@ def god_build(connection, player):
     if connection is not player and connection in protocol.players.values():
         connection.send_chat('%s is %s' % (player.name, message))
     protocol.irc_say('* %s is %s' % (player.name, message))
+
+@command('toggleadmin', 'tadmin', admin_only=True)
+def toggleadmin(connection, value):
+    """
+    Toggle a player's ability to send admin messages
+    /toggleadmin <player>
+    /tadmin <player>
+    """
+    player = get_player(connection.protocol, value)
+    if player is None:
+        return 'Unknown player'
+
+    player.can_message_admins = not player.can_message_admins
+
+    if player.can_message_admins:
+        irc_status = 'enabled'
+        chat_status = 'now'
+    else:
+        irc_status = 'disabled'
+        chat_status = 'no longer'
+
+    connection.protocol.irc_say(
+        f"{connection.name} {irc_status} admin messages for {player.name} "
+        f"(#{player.player_id})"
+    )
+
+    return f'{player.name} can {chat_status} message admins'

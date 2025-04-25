@@ -49,6 +49,7 @@ class FeatureConnection(ServerConnection):
         self.rights = None
         self.can_complete_line_build = True
         self.current_send_lines_types = []
+        self.can_message_admins = True
 
         super().__init__(*args, **kwargs)
 

@@ -81,6 +81,12 @@ def to_admin(connection, *arg):
     message = join_arguments(arg)
     if not message:
         return "Enter a message you want to send, like /admin I'm stuck"
+
+    success = 'Message sent to all admins currently online'
+    # silently discard
+    if not connection.can_message_admins:
+        return success
+
     prefix = '(TO ADMINS)'
     irc_relay = protocol.irc_relay
     if irc_relay:
@@ -97,4 +103,4 @@ def to_admin(connection, *arg):
         if can_view_admin_messages and player is not connection:
             player.send_chat('To ADMINS from %s: %s' %
                              (connection.name, message))
-    return 'Message sent to all admins currently online'
+    return success
