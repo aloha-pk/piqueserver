@@ -1,7 +1,7 @@
 [build-system]
 requires = [
-    "setuptools ~= 69.0",
-    "setuptools-scm ~= 8.0",
+    "setuptools >= 69,< 81",
+    "setuptools-scm >= 8,< 10",
     "Cython ~= 3.0",
     "wheel ~= 0.43",
 ]
@@ -116,7 +116,7 @@ dependencies = [
     "pyenet",
     "toml",
     "Pillow >= 5.1.0, <11",
-    "aiohttp >= 3.3.0, <3.8.0",
+    "aiohttp >= 3.3.0, < 3.12.0",
     "packaging >= 19.0",
 
     "Twisted",
