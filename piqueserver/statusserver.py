@@ -20,7 +20,7 @@ import abc
 from twisted.internet.defer import Deferred
 from aiohttp import web
 
-from jinja2 import Environment, PackageLoader
+from jinja2 import Environment, PackageLoader, select_autoescape
 import time
 from PIL import Image
 from io import BytesIO
@@ -118,7 +118,10 @@ class DefaultStatusServer(BaseStatusServer):
         self.last_update = None
         self.last_map_name = None
         self.cached_overview = None
-        env = Environment(loader=PackageLoader('piqueserver.web'))
+        env = Environment(
+            loader=PackageLoader('piqueserver.web'),
+            autoescape=select_autoescape(),
+        )
         self.status_template = env.get_template('status.html')
 
     async def json(self, request):
