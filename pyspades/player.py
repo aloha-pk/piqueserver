@@ -1066,10 +1066,11 @@ class ServerConnection(BaseConnection):
             self.weapon_object.reset()
         self.weapon_object = WEAPONS[weapon](self._on_reload)
         if not local:
-            change_weapon = loaders.ChangeWeapon()
-            self.protocol.broadcast_contained(change_weapon, save=True)
             if not no_kill:
-                self.kill(kill_type=CLASS_CHANGE_KILL)
+                if (self.team.spectator):
+                    self.spawn()
+                else:
+                    self.kill(kill_type=CLASS_CHANGE_KILL)
 
     def set_team(self, team):
         if team is self.team:
@@ -1079,7 +1080,7 @@ class ServerConnection(BaseConnection):
         self.team = team
         self.on_team_changed(old_team)
         if old_team.spectator:
-            self.respawn()
+            self.spawn()
         else:
             self.kill(kill_type=TEAM_CHANGE_KILL)
 
