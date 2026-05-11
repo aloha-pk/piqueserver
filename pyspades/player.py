@@ -1067,8 +1067,9 @@ class ServerConnection(BaseConnection):
         self.weapon_object = WEAPONS[weapon](self._on_reload)
         if not local:
             if not no_kill:
-                if (self.team.spectator):
-                    self.spawn()
+                if self.team.spectator:
+                    if self.spawn_call is None:
+                        self.spawn()
                 else:
                     self.kill(kill_type=CLASS_CHANGE_KILL)
 
@@ -1080,7 +1081,8 @@ class ServerConnection(BaseConnection):
         self.team = team
         self.on_team_changed(old_team)
         if old_team.spectator:
-            self.spawn()
+            if self.spawn_call is None:
+                self.spawn()
         else:
             self.kill(kill_type=TEAM_CHANGE_KILL)
 
