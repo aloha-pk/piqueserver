@@ -237,39 +237,44 @@ class ServerProtocol(BaseProtocol):
 
     async def update(self):
         while True:
-            start_time = time.monotonic()
-            # Notify if update starts more than 4ms later than requested
-            lag = start_time - self.world_time - UPDATE_FREQUENCY
-            if lag > 0.004:
-                log.debug(
-                    "LAG before world update: {lag:.0f} ms", lag=lag * 1000)
-
-            BaseProtocol.update(self)
-            # Map transfer
-            for player in self.connections.values():
-                if (player.map_data is not None and
-                        not player.peer.reliableDataInTransit):
-                    player.continue_map_transfer()
-            # Update world
-            while (time.monotonic() - self.world_time) > UPDATE_FREQUENCY:
-                self.loop_count += 1
-                self.world.update(UPDATE_FREQUENCY)
-                try:
-                    self.on_world_update()
-                except Exception:
-                    traceback.print_exc()
-                self.world_time += UPDATE_FREQUENCY
-            # Update network
-            if time.monotonic() - self.last_network_update >= 1 / self.network_fps:
-                self.last_network_update = self.world_time
-                self.update_network()
-
-            # Notify if update uses more than 70% of time budget
-            lag = time.monotonic() - start_time
-            if lag > (UPDATE_FREQUENCY * 0.7):
-                log.debug("world update LAG: {lag:.0f} ms", lag=lag * 1000)
-
-            delay = self.world_time + UPDATE_FREQUENCY - time.monotonic()
+            try:
+                start_time = time.monotonic()
+                # Notify if update starts more than 4ms later than requested
+                lag = start_time - self.world_time - UPDATE_FREQUENCY
+                if lag > 0.004:
+                    log.debug(
+                        "LAG before world update: {lag:.0f} ms", lag=lag * 1000)
+    
+                BaseProtocol.update(self)
+                # Map transfer
+                for player in self.connections.values():
+                    if (player.map_data is not None and
+                            not player.peer.reliableDataInTransit):
+                        player.continue_map_transfer()
+                # Update world
+                while (time.monotonic() - self.world_time) > UPDATE_FREQUENCY:
+                    self.loop_count += 1
+                    self.world.update(UPDATE_FREQUENCY)
+                    try:
+                        self.on_world_update()
+                    except Exception:
+                        traceback.print_exc()
+                    self.world_time += UPDATE_FREQUENCY
+                # Update network
+                if time.monotonic() - self.last_network_update >= 1 / self.network_fps:
+                    self.last_network_update = self.world_time
+                    self.update_network()
+    
+                # Notify if update uses more than 70% of time budget
+                lag = time.monotonic() - start_time
+                if lag > (UPDATE_FREQUENCY * 0.7):
+                    log.debug("world update LAG: {lag:.0f} ms", lag=lag * 1000)
+    
+                delay = self.world_time + UPDATE_FREQUENCY - time.monotonic()
+            except Exception:
+                # Prevent random exceptions from killing the
+                # whole loop without explanation
+                traceback.print_exc()
             await asyncio.sleep(delay)
 
     def update_network(self):
