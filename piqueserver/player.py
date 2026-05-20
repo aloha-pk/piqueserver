@@ -353,7 +353,6 @@ class FeatureConnection(ServerConnection):
 
     def ban(self, reason=None, duration=None):
         reason = ': ' + reason if reason is not None else ''
-        duration = duration or None
         if self.protocol.on_ban_attempt(self, reason, duration):
             self.protocol.ban_manager.announce_ban(self.address, self.name, reason, duration)
             self.protocol.on_ban(self, reason, duration)
