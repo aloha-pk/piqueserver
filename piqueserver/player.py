@@ -351,16 +351,17 @@ class FeatureConnection(ServerConnection):
         # main and initial loading network loops
         self.disconnect(ERROR_KICKED)
 
-    def ban(self, reason=None, duration=None):
-        reason = ': ' + reason if reason is not None else ''
+    def ban(self, reason="", duration=None, blob_of_trash=None, admin=None):
+        # Just in case someone tries to manually pass None in as the reason
+        reason = reason or ""
+
+        if (blob_of_trash is None):
+            blob_of_trash = reason
+
         if self.protocol.on_ban_attempt(self, reason, duration):
-            self.protocol.ban_manager.announce_ban(self.address, self.name, reason, duration)
+            self.protocol.ban_manager.announce_ban(self.address, self.name, blob_of_trash, duration)
             self.protocol.on_ban(self, reason, duration)
-            if self.address[0] == "127.0.0.1":
-                self.protocol.broadcast_chat("Ban ignored: localhost")
-            else:
-                self.protocol.ban_manager.add_ban(self.address[0], self.name,
-                                                  reason, duration)
+            self.protocol.ban_manager.add_ban(self.address[0], self.name, reason, duration, admin)
 
     def send_lines(self, lines: List[str], key: str = 'unknown') -> None:
         """

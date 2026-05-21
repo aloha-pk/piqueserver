@@ -65,8 +65,8 @@ def ban(connection, value, *arg):
     """
     duration, reason = get_ban_arguments(connection, arg)
     player = get_player(connection.protocol, value)
-    reason = connection.protocol.ban_manager.ban_reason_format(connection, player.name, reason, duration)
-    player.ban(reason, duration)
+    blob_of_trash = connection.protocol.ban_manager.ban_reason_format(connection, player.name, reason, duration)
+    player.ban(reason, duration, blob_of_trash, connection)
 
 
 @command(admin_only=True)
@@ -78,8 +78,8 @@ def hban(connection, value, *arg):
     duration = timeparse("1hour")
     reason = join_arguments(arg)
     player = get_player(connection.protocol, value)
-    reason = connection.protocol.ban_manager.ban_reason_format(connection, player.name, reason, duration)
-    player.ban(reason, duration)
+    blob_of_trash = connection.protocol.ban_manager.ban_reason_format(connection, player.name, reason, duration)
+    player.ban(reason, duration, blob_of_trash, connection)
 
 
 @command(admin_only=True)
@@ -91,8 +91,8 @@ def dban(connection, value, *arg):
     duration = timeparse("1day")
     reason = join_arguments(arg)
     player = get_player(connection.protocol, value)
-    reason = connection.protocol.ban_manager.ban_reason_format(connection, player.name, reason, duration)
-    player.ban(reason, duration)
+    blob_of_trash = connection.protocol.ban_manager.ban_reason_format(connection, player.name, reason, duration)
+    player.ban(reason, duration, blob_of_trash, connection)
 
 
 @command(admin_only=True)
@@ -104,8 +104,8 @@ def wban(connection, value, *arg):
     duration = timeparse("1week")
     reason = join_arguments(arg)
     player = get_player(connection.protocol, value)
-    reason = connection.protocol.ban_manager.ban_reason_format(connection, player.name, reason, duration)
-    player.ban(reason, duration)
+    blob_of_trash = connection.protocol.ban_manager.ban_reason_format(connection, player.name, reason, duration)
+    player.ban(reason, duration, blob_of_trash, connection)
 
 
 @command(admin_only=True)
@@ -117,8 +117,8 @@ def pban(connection, value, *arg):
     duration = 0
     reason = join_arguments(arg)
     player = get_player(connection.protocol, value)
-    reason = connection.protocol.ban_manager.ban_reason_format(connection, player.name, reason, duration)
-    player.ban(reason, duration)
+    blob_of_trash = connection.protocol.ban_manager.ban_reason_format(connection, player.name, reason, duration)
+    player.ban(reason, duration, blob_of_trash, connection)
 
 
 @command(admin_only=True)
@@ -129,20 +129,20 @@ def banip(connection, ip, *arg):
     """
     ban_manager = connection.protocol.ban_manager
     duration, reason = get_ban_arguments(connection, arg)
-    reason = ban_manager.ban_reason_format(connection, None, reason, duration)
+    blob_of_trash = ban_manager.ban_reason_format(connection, None, reason, duration)
     try:
-        error_message = ban_manager.add_ban(ip, None, reason, duration)
+        error_message = ban_manager.add_ban(ip, None, reason, duration, connection)
         if error_message:
             return error_message
     except ValueError:
         return 'Invalid IP address/network'
-    reason = ': ' + reason if reason is not None else ''
+    blob_of_trash = ': ' + blob_of_trash if blob_of_trash is not None else ''
     duration = duration or None
     if duration is None:
-        return 'IP/network %s permabanned%s' % (ip, reason)
+        return 'IP/network %s permabanned%s' % (ip, blob_of_trash)
     else:
         return 'IP/network %s banned for %s%s' % (
-            ip, prettify_timespan(duration), reason)
+            ip, prettify_timespan(duration), blob_of_trash)
 
 
 @command(admin_only=True)
