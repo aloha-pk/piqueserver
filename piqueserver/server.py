@@ -184,6 +184,8 @@ master_hosts = config.option("master_hosts", [
 
 def random_choice_cycle(choices):
     n = len(choices)
+    if (n <= 1):
+        yield choices[0]
     while True:
         n -= 1
         if n == 0:
