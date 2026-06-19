@@ -135,7 +135,7 @@ def main():
         asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
     from twisted.internet import asyncioreactor
-    asyncioreactor.install(asyncio.get_event_loop())
+    asyncioreactor.install()
 
     from piqueserver.config import config, TOML_FORMAT, JSON_FORMAT
 

@@ -110,10 +110,10 @@ classifiers = [
     "Topic :: Games/Entertainment :: First Person Shooters",
 ]
 
-requires-python = ">= 3.10, < 3.13"
+requires-python = ">= 3.10"
 dependencies = [
     "Jinja2 >= 3.0.0, <4",
-    "pyenet",
+    "pyenet @ https://github.com/piqueserver/pyenet/archive/004cd2feaa6267c6178c24f34b4c5c54e1ed99b2.tar.gz",
     "toml",
     "Pillow >= 5.1.0, <11",
     "aiohttp >= 3.3.0, < 3.12.0",
