@@ -104,6 +104,7 @@ def load_scripts(script_names, script_dir, script_type):
         spec_scripts = finder.find_spec(script, [script_dir])
         spec_global = importlib.util.find_spec(script)
         spec = spec_scripts or spec_global
+
         if not spec:
             log.error(
                 ("{script_type} '{script}' not found in either {script_dir} "
@@ -113,23 +114,17 @@ def load_scripts(script_names, script_dir, script_type):
                 script_dir=script_dir
             )
             continue
+
         # namespace module name to avoid shadowing global modules
         # TODO: figure out if there are any right or better ways.
         spec.name = f'{script}_pique_{script_type}'
         spec.loader.name = spec.name
+
         # load module
-        try:
-            module = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(module)
-            script_objects.append(module)
-            continue
-        except Exception as e: # needs to be broad since we exec the module
-            log.failure(
-                "Error while loading {script_type} {script}: {exception!r}",
-                script_type=script_type,
-                script=script,
-                exception=e
-            )
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        script_objects.append(module)
+        continue
 
     return script_objects
 
