@@ -31,8 +31,7 @@ Options
 
 from twisted.internet.reactor import seconds
 from piqueserver.scheduler import Scheduler
-from piqueserver.commands import (command, admin, get_player, join_arguments,
-                                  CommandError, player_only)
+from piqueserver.commands import command, admin, get_player, join_arguments, CommandError, player_only, target_player
 from piqueserver.config import config, cast_duration
 
 REQUIRE_REASON = True
@@ -194,6 +193,25 @@ def togglevotekick(connection, *args):
     return S_VOTEKICK_USER_SET.format(user=player.name, set=(
         'enabled' if player.votekick_enabled else 'disabled'))
 
+@command('dvk', 'disablevotekick', admin_only=True)
+@target_player
+def dvk(connection, player):
+    """
+    Prevent a player from initiating votekicks
+    /dvk <player>
+    """
+    player.votekick_enabled = False
+    return S_VOTEKICK_USER_SET.format(user=player.name, set='disabled')
+
+@command('evk', 'enablevotekick', admin_only=True)
+@target_player
+def evk(connection, player):
+    """
+    Allow a player to initiate votekicks
+    /evk <player>
+    """
+    player.votekick_enabled = True
+    return S_VOTEKICK_USER_SET.format(user=player.name, set='enabled')
 
 class Votekick:
     timeout = 120.0  # 2 minutes
