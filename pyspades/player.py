@@ -327,7 +327,7 @@ class ServerConnection(BaseConnection):
                                   contained.left, contained.right)
         contained.player_id = self.player_id
         z_vel = world_object.velocity.z
-        if contained.jump and not (z_vel >= 0 and z_vel < 0.017):
+        if world_object.airborne:
             contained.jump = False
         # XXX unsupported for now
         # returned = self.on_animation_update(contained.primary_fire,
