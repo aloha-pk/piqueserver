@@ -1,7 +1,7 @@
 This is a fork of `piqueserver <https://github.com/piqueserver/piqueserver>`__.
 
-\:tada: Features
-----------------
+Features
+--------
 
 -  Many administrator features
 -  A lot of epic commands
@@ -24,8 +24,8 @@ This is a fork of `piqueserver <https://github.com/piqueserver/piqueserver>`__.
 -  Ban subscribe service
 -  A ton of other features
 
-\:rocket: Installation
-----------------------
+Installation
+------------
 
 Python 3.10 or above is required.
 
@@ -51,8 +51,8 @@ Optional features:
 - `ssh`: enable ssh manhole server support
 - `from`: enable the `from` command to geolocate players by ip
 
-\:rocket: Running
------------------
+Running
+-------
 
 Then copy the default configuration as a base to work off
 
@@ -77,19 +77,19 @@ for config files, specify a directory with the ``-d`` flag:
     piqueserver --copy-config -d custom_dir
     piqueserver -d custom_dir
 
-\:speech_balloon: FAQ
----------------------
+FAQ
+---
 
 Working with multiple versions is a pain. 0.76 will be suported in the
 future only.
 
-\:blush: Contribute
--------------------
+Contribute
+----------
 
 Don't be shy and submit us a PR or an issue! Help is always appreciated
 
-\:wrench: Development
----------------------
+Development
+-----------
 
 Use ``python3`` and ``pip`` to setup the development environment:
 
