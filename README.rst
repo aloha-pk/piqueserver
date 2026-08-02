@@ -1,19 +1,4 @@
-piqueserver |Build Status| |Wheel Status| |Coverage Status|
-===========================================================
-
-An Ace of Spades 0.75 server based on
-`PySnip <https://github.com/NateShoffner/PySnip>`__.
-
-\:point_right: Chat with us!
-----------------------------
-
--  Gitter: |Join the chat at https://gitter.im/piqueserver/piqueserver|
--  Matrix: ``#piqueserver:matrix.org`` (`Riot Webchat
-   link <https://riot.im/app/#/room/#piqueserver:matrix.org>`__)
--  Discord: Join with `this invite link <https://discord.gg/w6Te7xC>`__
--  Slack: Join with `this invite link <https://join.slack.com/t/piqueserver/shared_invite/enQtMjg5MDI3MTkwNTgxLTNhMDkyNDRkNzhiNmQyYjRkOTdjNGNkYzNhNTQ4NzZkY2JhZjQxYzIyMTQ0Y2JlYTI2ZGFjMTFmNjAwZTM2OGU>`__
-
-All of these are `bridged <https://matrix.org/docs/guides/faq.html#what-is-matrix>`__ together!
+This is a fork of `piqueserver <https://github.com/piqueserver/piqueserver>`__.
 
 \:tada: Features
 ----------------
@@ -42,41 +27,11 @@ All of these are `bridged <https://matrix.org/docs/guides/faq.html#what-is-matri
 \:rocket: Installation
 ----------------------
 
-Requirements
-~~~~~~~~~~~~
-
-Piqueserver requires Python 3.10 and above
-
-We currently provide builds for:
- - Linux x86_64
- - Windows x86 and x86_64
- 
-If your system is not one of the above, you will also need a recent C++ Compiler.
-
-pip (stable version)
-~~~~~~~~~~~~~~~~~~~~
+Python 3.10 or above is required.
 
 .. code:: bash
 
-    pip3 install piqueserver
-
-Optional features:
-
-- `ssh`: enable ssh manhole server support
-- `from`: enable the `from` command to geolocate players by ip
-
-To install with optional features with pip:
-
-.. code:: bash
-
-    pip3 install piqueserver[ssh,from]
-
-git (bleeding edge)
-~~~~~~~~~~~~~~~~~~~
-
-.. code:: bash
-
-    git clone https://github.com/piqueserver/piqueserver
+    git clone https://github.com/aloha-pk/piqueserver
     cd piqueserver
     python3 -m venv venv
     source venv/bin/activate
@@ -85,16 +40,16 @@ git (bleeding edge)
 
     # now `piqueserver` will be available on the $PATH when venv is active
 
-Arch Linux
-~~~~~~~~~~
-
-The `AUR package <https://aur.archlinux.org/packages/piqueserver-git/>`__
-(git master) is currently broken. When it gets repaired (you can help!),
-you'll be able to install manually or with your favourite AUR helper:
+To install with optional features:
 
 .. code:: bash
 
-    pacaur -S piqueserver-git
+    pip3 install .[ssh,from]
+
+Optional features:
+
+- `ssh`: enable ssh manhole server support
+- `from`: enable the `from` command to geolocate players by ip
 
 \:rocket: Running
 -----------------
@@ -125,46 +80,8 @@ for config files, specify a directory with the ``-d`` flag:
 \:speech_balloon: FAQ
 ---------------------
 
-What's the purpose?
-~~~~~~~~~~~~~~~~~~~
-
-The purpose of this repo is to be a continuation of PySnip.
-
-What if PySnip development returns?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Then they would merge our changes and development would be continued
-there, I guess. The important thing is to keep AoS servers alive.
-
-Why should I use piqueserver instead of PySnip/PySpades?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
--  Multi config installation
--  Docker support
--  Bug fixes
--  Improvements
--  Better anti-hacking
--  New scripts
-
-What about 0.76 support
-~~~~~~~~~~~~~~~~~~~~~~~
-
 Working with multiple versions is a pain. 0.76 will be suported in the
 future only.
-
-Is that everything?
-~~~~~~~~~~~~~~~~~~~
-
-Please see also the
-`Online Documentation <https://piqueserver.readthedocs.io/en/latest/>`__ for more
-information (readthedocs.io has replaced our wiki).
-
-Where can i find more scripts?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-You can checkout the `Piqueserver Extras Repository <https://github.com/piqueserver/piqueserver-extras>`__, that contains scripts made by the community and ports from PySnip/PySpades script.
-Or in community forums, such as:
-`aloha.pk <https://aloha.pk/c/aos-modding/scripts/83>`__ and `BuildAndShoot <https://www.buildandshoot.com/forums/viewforum.php?f=19>`__
 
 \:blush: Contribute
 -------------------
@@ -181,17 +98,3 @@ Use ``python3`` and ``pip`` to setup the development environment:
     $ python3 -m venv venv && source venv/bin/activate
     (venv) $ pip install -e '.[dev]' # install in-place
     (venv) $ deactivate # Deactivate virtualenv
-
---------------
-
-Brought to you with :heart: by the `piqueserver
-team <https://github.com/orgs/piqueserver/people>`__.
-
-.. |Build Status| image:: https://github.com/piqueserver/piqueserver/actions/workflows/main.yml/badge.svg?branch=master
-   :target: https://github.com/piqueserver/piqueserver/actions/workflows/main.yml
-.. |Wheel Status| image:: https://github.com/piqueserver/piqueserver/actions/workflows/wheels.yml/badge.svg?branch=master
-   :target: https://github.com/piqueserver/piqueserver/actions/workflows/wheels.yml
-.. |Coverage Status| image:: https://coveralls.io/repos/github/piqueserver/piqueserver/badge.svg?branch=master
-   :target: https://coveralls.io/github/piqueserver/piqueserver?branch=master
-.. |Join the chat at https://gitter.im/piqueserver/piqueserver| image:: https://badges.gitter.im/piqueserver/piqueserver.svg
-   :target: https://gitter.im/piqueserver/piqueserver?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
