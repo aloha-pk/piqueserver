@@ -60,7 +60,7 @@ class FeatureConnection(ServerConnection):
         client_ip = self.address[0]
 
         ban_manager = self.protocol.ban_manager
-        banned = ban_manager.get_ban(client_ip)
+        banned = ban_manager.get_ban(client_ip, self)
         if banned:
             name, reason, timestamp = banned[1:]
 
