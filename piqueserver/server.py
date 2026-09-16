@@ -183,17 +183,15 @@ master_hosts = config.option("master_hosts", [
 ])
 
 def random_choice_cycle(choices):
-    n = len(choices)
     while True:
-        n -= 1
-        if n == 0:
-            choice = choices[0]
+        last_choice = choices[-1]
+
+        random.shuffle(choices)
+        while (choices[0] == last_choice):
             random.shuffle(choices)
-            n = len(choices) - 1
-            while n > 0 and choice == choices[n]:
-                random.shuffle(choices)
+
+        for choice in choices:
             yield choice
-        yield choices[n]
 
 
 class FeatureTeam(Team):
