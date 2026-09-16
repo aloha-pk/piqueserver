@@ -187,7 +187,7 @@ def random_choice_cycle(choices):
         last_choice = choices[-1]
 
         random.shuffle(choices)
-        while (choices[0] == last_choice):
+        while (len(choices) > 1 && choices[0] == last_choice):
             random.shuffle(choices)
 
         for choice in choices:
