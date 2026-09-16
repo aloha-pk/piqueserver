@@ -238,13 +238,6 @@ class FeatureConnection(ServerConnection):
                 self.send_chat("You can't hurt %s! That player is in "
                                "*god mode*" % player.name)
             return False
-        if self.god:
-            self.protocol.broadcast_chat(
-                '%s, killing in god mode is forbidden!' % self.name, irc=True)
-            self.protocol.broadcast_chat(
-                '%s returned to being a mere human.' % self.name, irc=True)
-            self.god = False
-            self.god_build = False
 
     def on_kill(self, killer: Optional['FeatureConnection'], _type: int,
                 grenade: None) -> None:
