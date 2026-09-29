@@ -620,8 +620,8 @@ class FeatureProtocol(ServerProtocol):
         self.set_master()
 
     async def shutdown(self):
-        for connection in tuple(self.connections.values()):
-            connection.disconnect(ERROR_SHUTDOWN)
+        for con in tuple(self.connections.values()):
+            con.disconnect_now(ERROR_SHUTDOWN)
 
     async def watch_for_releases(self):
         """Starts a loop for `check_for_releases` and updates `self.new_release`."""
