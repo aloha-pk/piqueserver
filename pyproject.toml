@@ -33,41 +33,6 @@ packages = [
 [tool.setuptools_scm]
 version_file = "piqueserver/_version.py"
 
-[tool.tox]
-legacy_tox_ini = """
-[tox]
-requires =
-    tox>=4
-
-env_list = py{38,39,310,311}
-
-[testenv]
-package = editable
-extras = dev, from, ssh
-description = run unit tests
-deps =
-    pytest>=8
-    pytest-sugar
-commands =
-    pytest tests/
-"""
-
-[tool.coverage.run]
-branch = true
-source = [
-    "piqueserver",
-    "pyspades",
-]
-
-omit = [
-    "piqueserver/scripts/*",
-    "piqueserver/game_modes/*",
-]
-
-plugins = [
-    "Cython.Coverage",
-]
-
 [project]
 name = "piqueserver"
 description = "Open-Source server implementation for Ace of Spades"
@@ -82,7 +47,6 @@ authors = [
 ]
 
 maintainers = [
-    { name = "NotAFile", email = "notafile@gmail.com" },
 ]
 
 keywords = [
@@ -120,9 +84,6 @@ dependencies = [
     "packaging >= 19.0",
 
     "Twisted",
-
-    # windows specific
-    "pypiwin32; platform_system==\"Windows\"",
 ]
 
 [project.scripts]
@@ -136,19 +97,6 @@ from = [
 
 # ssh script
 ssh = [
-    "Twisted[tls,conch]",
-]
-
-# development dependencies
-dev = [
-    "flake8",
-    "coveralls",
-    "pytest",
-    "pytest-cov",
-    "pytest-asyncio",
-    "Sphinx",
-    "tox",
-    "sphinx_rtd_theme",
     "Twisted[tls,conch]",
 ]
 
