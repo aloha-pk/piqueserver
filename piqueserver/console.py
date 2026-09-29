@@ -101,7 +101,7 @@ class ConsoleInput(LineReceiver):
     # methods used to emulate the behaviour of regular Connection objects to
     # prevent errors when command writers didn't test that their scripts would
     # work when run on the console
-    def send_chat(self, value: str, _):
+    def send_chat(self, value: str, _=None):
         print(value)
 
     def send_lines(self, lines: List[str], type: str = None):
