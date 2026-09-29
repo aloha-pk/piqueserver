@@ -27,15 +27,13 @@ cdef inline object allocate_memory(int size, char ** i):
     return ob
 
 cdef extern from "common_c.h":
-    cdef cppclass Vector:
+    struct Vector:
         float x, y, z
-        Vector()
-        Vector(float x, float y, float z)
-        void set(float x, float y, float z)
 
     struct LongVector:
         int x, y, z
 
+    Vector * create_vector(float x, float y, float z)
     void destroy_vector(Vector*)
 
 cdef inline int check_default_int(int value, int default) except -1:
@@ -67,6 +65,6 @@ cdef inline Vertex3 create_proxy_vector(Vector * v):
 cdef inline Vertex3 create_vertex3(float x, float y, float z):
     # faster way of creating Vertex3 instances
     cdef Vertex3 new_vertex = Vertex3(is_ref = True)
-    new_vertex.value = new Vector(x, y, z)
+    new_vertex.value = create_vector(x, y, z)
     new_vertex.is_ref = False
     return new_vertex
