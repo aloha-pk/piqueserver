@@ -1,8 +1,0 @@
-services:
-    piqueserver:
-        build:
-            context: .
-            dockerfile: dev.Dockerfile
-        volumes:
-            - ./piqueserver/config:/config
-            - ./:/app/src/
