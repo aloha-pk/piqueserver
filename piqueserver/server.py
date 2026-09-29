@@ -620,26 +620,8 @@ class FeatureProtocol(ServerProtocol):
         self.set_master()
 
     async def shutdown(self):
-        """
-        Notifies players and disconnects them before a shutdown.
-        """
-        if not self.connections:
-            # exit instantly if nobody is connected anyway
-            return
-
-        # send shutdown notification
-        log.info("disconnecting players")
-        self.broadcast_chat("Server shutting down in 3sec.")
-        for i in range(3, 0, -1):
-            self.broadcast_chat(str(i)+"...")
-            await sleep(1)
-
-        # disconnect all players
-        for connection in list(self.connections.values()):
+        for connection in tuple(self.connections.values()):
             connection.disconnect(ERROR_SHUTDOWN)
-
-        # give the connections some time to terminate
-        await sleep(0.2)
 
     async def watch_for_releases(self):
         """Starts a loop for `check_for_releases` and updates `self.new_release`."""
