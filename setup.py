@@ -38,14 +38,6 @@ if use_linetrace:
     Options.generate_cleanup_code = True
 
 extension_descriptors = [
-    Descriptor('pyspades.world',
-               sources=['pyspades/world.pyx'],
-               compile_flags=['-std=c++11']),
-
-    Descriptor('pyspades.mapmaker',
-               sources=['pyspades/mapmaker.pyx'],
-               compile_flags=['-std=c++11']),
-
     Descriptor('pyspades.bytes',
                sources=['pyspades/bytes.pyx']),
 
@@ -60,9 +52,6 @@ extension_descriptors = [
 
     Descriptor('pyspades.packet',
                sources=['pyspades/packet.pyx']),
-
-    Descriptor('pyspades.vxl',
-               sources=['pyspades/vxl.pyx']),
 ]
 
 extensions: List[Extension] = []
