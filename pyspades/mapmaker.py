@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 from pyspades.color import hsb_to_rgb, interpolate_hsb, interpolate_rgb
 
 def nimplf(*a, **k):

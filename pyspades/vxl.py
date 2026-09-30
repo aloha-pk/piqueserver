@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 def nimplf(*a, **k):
 	raise NotImplementedError(
 		"most pyspades code has been ripped out; use pvx.so"
