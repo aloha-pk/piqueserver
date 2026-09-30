@@ -1,6 +1,5 @@
 /* rough port of pvx/pyspades/bytewriterclass.c to work with cython garbage */
 #include "Python.h"
-#include <endian.h>
 #include <stdint.h>
 #include <stdlib.h>
 
