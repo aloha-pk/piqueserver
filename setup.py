@@ -59,7 +59,7 @@ for descriptor in extension_descriptors:
     extension = Extension(
         name=descriptor.extension_name,
         sources=descriptor.sources,
-        language='c++',
+        language='c',
         include_dirs=['pyspades/'],
         define_macros=list({**macros, **descriptor.macros}.items()),
         extra_link_args=[*link_flags, *descriptor.link_flags],

@@ -20,37 +20,39 @@ The ByteReader/Bytewriter classes are used to read and write various data types
 from and to byte-like objects. This is used e.g. to read the contents of
 packets.
 """
-from libc.math cimport NAN
 
-cdef extern from "bytes_c.cpp":
-    char read_byte(char * data)
-    unsigned char read_ubyte(char * data)
-    short read_short(char * data, int big_endian)
-    unsigned short read_ushort(char * data, int big_endian)
-    int read_int(char * data, int big_endian)
-    unsigned int read_uint(char * data, int big_endian)
-    double read_float(char * data, int big_endian)
-    char * read_string(char * data)
+cdef extern from "bytes_c.c":
+    struct Strm:
+        char *buf
+        Py_ssize_t off
+        Py_ssize_t len
+        Py_ssize_t alloc
 
-    stringstream * create_stream()
-    void delete_stream(stringstream * stream)
-    void write_byte(stringstream * stream, char value)
-    void write_ubyte(stringstream * stream, unsigned char value)
-    void write_short(stringstream * stream, short value, int big_endian)
-    void write_ushort(stringstream * stream, unsigned short value, int big_endian)
-    void write_int(stringstream * stream, int value, int big_endian)
-    void write_uint(stringstream * stream, unsigned int value, int big_endian)
-    void write_float(stringstream * stream, double value, int big_endian)
-    void write_string(stringstream * stream, char * data, size_t size)
-    void write(stringstream * stream, char * data, size_t size)
-    void rewind_stream(stringstream * stream, int bytecount)
-    object get_stream(stringstream * stream)
-    size_t get_stream_size(stringstream * stream)
-    size_t get_stream_pos(stringstream * stream)
+    Strm *strm_creat()
+    void strm_close(Strm *strm)
 
-cdef extern from "<sstream>" namespace "std":
-    cdef cppclass stringstream:
-        pass
+    # great use of stdint.h. . .
+    char  read_byte(void *data)
+    short read_short(void *data)
+    int   read_int(void *data)
+
+    unsigned char  read_ubyte(void *data)
+    unsigned short read_ushort(void *data)
+    unsigned int   read_uint(void *data)
+
+    float read_float(void *data)
+    char *read_string(void *data)
+
+    void write_buf(Strm *strm, char *data, Py_ssize_t size)
+    void write_byte(Strm *strm, char val)
+    void write_short(Strm *strm, short val)
+    void write_int(Strm *strm, int val)
+    void write_float(Strm *strm, float val)
+    void write_string(Strm *strm, char *data, Py_ssize_t size)
+    void rewind_stream(Strm *strm, Py_ssize_t off)
+    bytes get_stream(Strm *strm)
+    Py_ssize_t get_stream_size(Strm *strm)
+    Py_ssize_t get_stream_pos(Strm *strm)
 
 class NoDataLeft(Exception):
     pass
@@ -60,7 +62,7 @@ DEF LONG_LONG_ERROR = -0xFFFFFFFFFFFFFFFF >> 1
 
 cdef class ByteReader:
     """Reads various data types from a bytes-like object"""
-    def __init__(self, input_data, int start = 0, int size = -1):
+    def __init__(self, input_data, Py_ssize_t start = 0, Py_ssize_t size = -1):
         self.input = input_data
         self.data = input_data
         self.data += start
@@ -71,14 +73,14 @@ cdef class ByteReader:
         self.end = self.data + size
         self.start = start
 
-    cdef char * check_available(self, int size) except NULL:
+    cdef char * check_available(self, Py_ssize_t size):
         cdef char * data = self.pos
         if data + size > self.end:
             raise NoDataLeft('not enough data')
         self.pos += size
         return data
 
-    cpdef read(self, int bytecount = -1):
+    cpdef read(self, Py_ssize_t bytecount = -1):
         """read a number of bytes
 
         Arguments:
@@ -87,14 +89,14 @@ cdef class ByteReader:
         Returns:
             bytes: ``bytecount`` bytes of data
         """
-        cdef int left = self.dataLeft()
+        cdef Py_ssize_t left = self.dataLeft()
         if bytecount == -1 or bytecount > left:
             bytecount = left
         ret = self.pos[:bytecount]
         self.pos += bytecount
         return ret
 
-    cpdef int readByte(self, bint unsigned = False) except INT_ERROR:
+    cpdef int readByte(self, bint unsigned = False):
         """read one byte of data as integer
 
         Arguments:
@@ -109,8 +111,7 @@ cdef class ByteReader:
         else:
             return read_byte(pos)
 
-    cpdef int readShort(self, bint unsigned = False, bint big_endian = True) \
-                        except INT_ERROR:
+    cpdef int readShort(self, bint unsigned = False, bint big_endian = True):
         """read two bytes of data as integer
 
         Arguments:
@@ -122,12 +123,11 @@ cdef class ByteReader:
         """
         cdef char * pos = self.check_available(2)
         if unsigned:
-            return read_ushort(pos, big_endian)
+            return read_ushort(pos)
         else:
-            return read_short(pos, big_endian)
+            return read_short(pos)
 
-    cpdef long long readInt(self, bint unsigned = False,
-                            bint big_endian = True) except LONG_LONG_ERROR:
+    cpdef long long readInt(self, bint unsigned = False, bint big_endian = True):
         """read four bytes of data as integer
 
         Arguments:
@@ -139,11 +139,11 @@ cdef class ByteReader:
         """
         cdef char * pos = self.check_available(4)
         if unsigned:
-            return read_uint(pos, big_endian)
+            return read_uint(pos)
         else:
-            return read_int(pos, big_endian)
+            return read_int(pos)
 
-    cpdef float readFloat(self, bint big_endian = True) except? NAN:
+    cpdef float readFloat(self, bint big_endian = True):
         """read four bytes of data as floating point number
 
         Arguments:
@@ -153,9 +153,9 @@ cdef class ByteReader:
             float: The value of the bytes as float
         """
         cdef char * pos = self.check_available(4)
-        return read_float(pos, big_endian)
+        return read_float(pos)
 
-    cpdef bytes readString(self, int size = -1):
+    cpdef bytes readString(self, Py_ssize_t size = -1):
         """read a string
 
         Arguments:
@@ -173,8 +173,8 @@ cdef class ByteReader:
         self.pos += size
         return bytes(value)
 
-    cpdef ByteReader readReader(self, int size = -1):
-        cdef int left = self.dataLeft()
+    cpdef ByteReader readReader(self, Py_ssize_t size = -1):
+        cdef Py_ssize_t left = self.dataLeft()
         if size == -1 or size > left:
             size = left
         cdef ByteReader reader = ByteReader(self.input,
@@ -182,21 +182,21 @@ cdef class ByteReader:
         self.pos += size
         return reader
 
-    cpdef size_t tell(self):
+    cpdef Py_ssize_t tell(self):
         """get the current position in the buffer
 
         Returns:
             int: The current position in bytes"""
         return self.pos - self.data
 
-    cpdef int dataLeft(self):
+    cpdef Py_ssize_t dataLeft(self):
         """get the number of bytes left in the buffer
 
         Returns:
             int: The number of bytes left"""
         return self.end - self.pos
 
-    cpdef seek(self, size_t pos):
+    cpdef seek(self, Py_ssize_t pos):
         """move to a position in the buffer
 
         Arguments:
@@ -208,14 +208,14 @@ cdef class ByteReader:
         if self.pos < self.data:
             self.pos = self.data
 
-    cdef void _skip(self, int bytecount):
+    cdef void _skip(self, Py_ssize_t bytecount):
         self.pos += bytecount
         if self.pos > self.end:
             self.pos = self.end
         if self.pos < self.data:
             self.pos = self.data
 
-    cpdef skipBytes(self, int bytecount):
+    cpdef skipBytes(self, Py_ssize_t bytecount):
         """move the position ``bytecount`` bytes ahead
 
         Arguments:
@@ -223,13 +223,13 @@ cdef class ByteReader:
         """
         self._skip(bytecount)
 
-    cpdef rewind(self, int value):
+    cpdef rewind(self, Py_ssize_t off):
         """move the position ``bytecount`` bytes back
 
         Arguments:
             bytecount: number of bytes to move back
         """
-        self._skip(-value)
+        self._skip(-off)
 
     def __len__(self):
         return self.size
@@ -239,51 +239,42 @@ cdef class ByteReader:
 
 cdef class ByteWriter:
     def __init__(self):
-        self.stream = create_stream()
+        self.stream = strm_creat()
 
-    cdef void writeSize(self, char * data, int size):
-        write(self.stream, data, size)
+    cdef void writeSize(self, char *data, Py_ssize_t size):
+        write_buf(self.stream, data, size)
 
     cpdef write(self, data):
-        write(self.stream, data, len(data))
+        write_buf(self.stream, data, len(data))
 
     cpdef writeByte(self, int value, bint unsigned = False):
-        if unsigned:
-            write_ubyte(self.stream, value)
-        else:
-            write_byte(self.stream, value)
+        write_byte(self.stream, value)
 
     cpdef writeShort(self, int value, bint unsigned = False,
                      bint big_endian = True):
-        if unsigned:
-            write_ushort(self.stream, value, big_endian)
-        else:
-            write_short(self.stream, value, big_endian)
+        write_short(self.stream, value)
 
     cpdef writeInt(self, long long value, bint unsigned = False,
                    bint big_endian = True):
-        if unsigned:
-            write_uint(self.stream, value, big_endian)
-        else:
-            write_int(self.stream, value, big_endian)
+        write_int(self.stream, value)
 
     cpdef writeFloat(self, float value, bint big_endian = True):
-        write_float(self.stream, value, big_endian)
+        write_float(self.stream, value)
 
-    cpdef writeStringSize(self, char * value, int size):
+    cpdef writeStringSize(self, char *value, Py_ssize_t size):
         write_string(self.stream, value, size)
 
-    cpdef writeString(self, value, int size = -1):
+    cpdef writeString(self, value, Py_ssize_t size = -1):
         write_string(self.stream, value, len(value))
         if size != -1:
             self.pad(size - (len(value) + 1))
 
-    cpdef pad(self, int bytecount):
-        cdef int i
+    cpdef pad(self, Py_ssize_t bytecount):
+        cdef Py_ssize_t i
         for i in range(bytecount):
-            write_ubyte(self.stream, 0)
+            write_byte(self.stream, 0)
 
-    cpdef rewind(self, int bytecount):
+    cpdef rewind(self, Py_ssize_t bytecount):
         rewind_stream(self.stream, bytecount)
 
     cpdef size_t tell(self):
@@ -293,7 +284,7 @@ cdef class ByteWriter:
         return get_stream(self.stream)
 
     def __dealloc__(self):
-        delete_stream(self.stream)
+        strm_close(self.stream)
 
     def __len__(self):
         return get_stream_size(self.stream)
