@@ -13,7 +13,7 @@ struct Strm {
 
 static struct Strm *strm_creat(void)
 {
-	struct Strm *strm = PyMem_Malloc(sizeof(strm));
+	struct Strm *strm = PyMem_Malloc(sizeof(struct Strm));
 	if (strm == NULL)
 		abort();
 
