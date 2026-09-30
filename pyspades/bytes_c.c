@@ -140,7 +140,7 @@ static uint32_t read_uint(void *data)
 	return *(uint32_t *)data;
 }
 
-static int32_t read_float(void *data)
+static float read_float(void *data)
 {
 	return *(float *)data;
 }
