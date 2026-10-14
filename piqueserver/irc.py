@@ -152,7 +152,7 @@ class IRCBot(irc.IRCClient):
 
         if msg.startswith(self.factory.chatprefix):
             max_len = MAX_IRC_CHAT_SIZE - \
-                len(self.protocol.server_prefix) - 1
+                len(self.protocol.server_prefix)
             msg = msg[len(self.factory.chatprefix):].strip()
             message = ("[irc] <{}> {}".format(prefix + alias, msg))[:max_len]
             log.info('{message}', message=escape_control_codes(message))

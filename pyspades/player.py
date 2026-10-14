@@ -1305,7 +1305,7 @@ class ServerConnection(BaseConnection):
             chat_message.chat_type = CHAT_TEAM
             # 34 is guaranteed to be out of range!
             chat_message.player_id = 35
-            prefix = self.protocol.server_prefix + ' '
+            prefix = self.protocol.server_prefix
 
         lines = textwrap.wrap(value, MAX_CHAT_SIZE - len(prefix) - 1)
 

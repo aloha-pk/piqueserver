@@ -134,7 +134,7 @@ teamswitch_allowed = config.option('teamswitch_allowed', default=True)
 max_players = config.option('max_players', default=20)
 melee_damage = config.option('melee_damage', default=100)
 max_connections_per_ip = config.option('max_connections_per_ip', default=0)
-server_prefix = config.option('server_prefix', default='[*]')
+server_prefix = config.option('server_prefix', default='[*] ')
 balanced_teams = config.option('balanced_teams', default=2)
 default_ban_duration = bans_config.option(
     'default_duration', default="1day", cast=cast_duration)
